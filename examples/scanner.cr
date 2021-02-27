@@ -8,27 +8,27 @@ subnets:
     expects:
       - name: bom
         priority: 0
-        type: 0
+        type: iata
       - name: ist
         priority: 1
-        type: 0
+        type: iata
     excludes:
       - name: sin
-        type: 0
+        type: iata
   - ipRange: 172.64.228.0/24
     expects:
       - name: nrt
         priority: 2
-        type: 0
+        type: iata
 caching:
   ipAddressCapacityPerSubnet: 4
 quirks:
-  numberOfScansPerSubnet: 25
-  maximumNumberOfFailuresPerSubnet: 15
+  numberOfScansPerSubnet: 50
+  maximumNumberOfFailuresPerSubnet: 25
   sleep: 2
   skipRange:
-    - 3
-    - 6
+    - 1
+    - 2
 timeout:
   read: 2
   write: 2

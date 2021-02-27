@@ -45,7 +45,11 @@
   "maximumNumberOfFailuresPerSubnet": 15,
   "skipRange": [3, 6],
   "clearIfOnlyNeedles": [
-    [177], [199], [177, 199], [177, 92], [177, 107]
+    ["LosAngeles_UnitedStates"], 
+    ["SanJose_UnitedStates"], 
+    ["LosAngeles_UnitedStates", "SanJose_UnitedStates"], 
+    ["LosAngeles_UnitedStates", "Frankfurt_Germany"], 
+    ["LosAngeles_UnitedStates", "Munich_Germany"]
   ],
   "timeout": {
     "read": 2,
