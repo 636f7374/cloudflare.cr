@@ -56,23 +56,21 @@ module Cloudflare::Caching
     end
 
     def to_tuple_ipaddresses : Array(Tuple(Needles::IATA, Socket::IPAddress))
-      @mutex.synchronize do
-        list = Set(Tuple(UInt8, Needles::IATA, Socket::IPAddress)).new
+      _entries = @mutex.synchronize { entries.dup }
+      list = Set(Tuple(UInt8, Needles::IATA, Socket::IPAddress)).new
 
-        entries.each do |ip_range, entry|
-          entry.each do |item|
-            iata, priority, ip_address = item
-            list << Tuple.new priority, iata, ip_address
-          end
+      _entries.each do |ip_range, entry|
+        entry.each do |item|
+          iata, priority, ip_address = item
+          list << Tuple.new priority, iata, ip_address
         end
+      end
 
-        list = list.to_a.sort { |a, b| a.first <=> b.first }.to_set
+      list = list.to_a.sort { |a, b| a.first <=> b.first }.to_set
 
-        list.map do |item|
-          priority, iata, ip_address = item
-
-          Tuple.new iata, ip_address
-        end
+      list.map do |item|
+        priority, iata, ip_address = item
+        Tuple.new iata, ip_address
       end
     end
   end

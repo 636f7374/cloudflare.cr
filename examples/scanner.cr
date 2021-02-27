@@ -44,5 +44,7 @@ end
 
 loop do
   STDOUT.puts [scanner.caching.to_tuple_ipaddresses]
+  STDOUT.puts
+
   sleep 10_f32.seconds
 end

@@ -1,4 +1,4 @@
-module Cloudflare::CommandLine
+module Cloudflare::Serialization
   struct Import
     include JSON::Serializable
 

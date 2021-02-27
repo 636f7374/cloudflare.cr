@@ -1,4 +1,6 @@
 require "./src/cloudflare.cr"
+require "./serialization/serialization.cr"
+require "./serialization/*"
 require "./cli/*"
 
 option_parser = Cloudflare::CommandLine::OptionParser.new
@@ -6,7 +8,7 @@ option_parser.parse
 
 import, output_path = option_parser.get!
 starting_time = Time.local
-export = Cloudflare::CommandLine::Export.new
+export = Cloudflare::Serialization::Export.new
 radar = Cloudflare::Radar.new options: import.to_options
 
 concurrent_mutex = Mutex.new :unchecked
@@ -28,7 +30,7 @@ loop do
 
   if all_dead
     radar.storage.each do |storage_entry|
-      export_entry = Cloudflare::CommandLine::Export::Entry.new
+      export_entry = Cloudflare::Serialization::Export::Entry.new
       export_entry.ipRange = storage_entry.first
       storage_entry.last.list.each { |name, count| export_entry.list[name.to_s] = count }
 

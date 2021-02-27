@@ -55,13 +55,6 @@
 }
 ```
 
-* Run
-
-```text
-radar -i {configurationFilePath}
-```
-
-
 ### Used as Shard
 
 Add this to your application's shard.yml:
