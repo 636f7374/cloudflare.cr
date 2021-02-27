@@ -1,5 +1,13 @@
 module Cloudflare::Subnet
+  # Ipv4: AS13335, AS209242, AS132892, AS139242, AS202623, AS395747, AS203898
+  # |_Empty: AS14789, AS133877
+  # Ipv6: AS13335, AS209242, AS132892, AS139242, AS394536, AS202623, AS395747, AS203898
+  # |_Empty: AS14789, AS133877
+
   Ipv4 = Set{
+    # References: https://ipinfo.io/AS13335
+    # AS13335 - Cloudflare, Inc.
+
     IPAddress.new(addr: "1.0.0.0/24"), IPAddress.new(addr: "1.1.1.0/24"), IPAddress.new(addr: "103.21.244.0/24"),
     IPAddress.new(addr: "103.22.200.0/23"), IPAddress.new(addr: "103.22.203.0/24"), IPAddress.new(addr: "103.81.228.0/24"),
     IPAddress.new(addr: "104.16.0.0/12"), IPAddress.new(addr: "108.162.192.0/20"), IPAddress.new(addr: "108.162.208.0/24"),
@@ -83,9 +91,71 @@ module Cloudflare::Subnet
     IPAddress.new(addr: "8.48.130.0/24"), IPAddress.new(addr: "8.48.132.0/23"), IPAddress.new(addr: "8.48.134.0/24"),
     IPAddress.new(addr: "8.6.112.0/24"), IPAddress.new(addr: "8.6.144.0/23"), IPAddress.new(addr: "8.6.146.0/24"),
     IPAddress.new(addr: "8.9.230.0/23"),
+
+    # References: https://ipinfo.io/AS209242
+    # AS209242 - Cloudflare London, LLC
+
+    IPAddress.new(addr: "103.156.22.0/23"), IPAddress.new(addr: "103.160.204.0/24"), IPAddress.new(addr: "12.221.133.0/24"),
+    IPAddress.new(addr: "141.193.213.0/24"), IPAddress.new(addr: "154.16.228.0/24"), IPAddress.new(addr: "176.126.206.0/23"),
+    IPAddress.new(addr: "185.109.21.0/24"), IPAddress.new(addr: "185.162.228.0/23"), IPAddress.new(addr: "185.162.230.0/23"),
+    IPAddress.new(addr: "185.170.166.0/24"), IPAddress.new(addr: "185.171.230.0/23"), IPAddress.new(addr: "185.174.138.0/24"),
+    IPAddress.new(addr: "185.193.28.0/23"), IPAddress.new(addr: "185.193.30.0/23"), IPAddress.new(addr: "185.201.139.0/24"),
+    IPAddress.new(addr: "185.207.92.0/24"), IPAddress.new(addr: "185.221.160.0/24"), IPAddress.new(addr: "185.235.180.0/22"),
+    IPAddress.new(addr: "191.101.251.0/24"), IPAddress.new(addr: "193.135.101.0/24"), IPAddress.new(addr: "194.152.44.0/24"),
+    IPAddress.new(addr: "194.169.194.0/24"), IPAddress.new(addr: "194.53.53.0/24"), IPAddress.new(addr: "194.53.55.0/24"),
+    IPAddress.new(addr: "195.245.221.0/24"), IPAddress.new(addr: "199.60.103.0/24"), IPAddress.new(addr: "203.107.173.0/24"),
+    IPAddress.new(addr: "203.13.32.0/24"), IPAddress.new(addr: "203.17.126.0/24"), IPAddress.new(addr: "203.22.223.0/24"),
+    IPAddress.new(addr: "203.23.103.0/24"), IPAddress.new(addr: "203.23.104.0/24"), IPAddress.new(addr: "203.23.106.0/24"),
+    IPAddress.new(addr: "203.24.102.0/24"), IPAddress.new(addr: "203.24.103.0/24"), IPAddress.new(addr: "203.24.108.0/24"),
+    IPAddress.new(addr: "203.24.109.0/24"), IPAddress.new(addr: "203.28.8.0/24"), IPAddress.new(addr: "203.28.9.0/24"),
+    IPAddress.new(addr: "203.29.52.0/24"), IPAddress.new(addr: "203.29.53.0/24"), IPAddress.new(addr: "203.29.54.0/23"),
+    IPAddress.new(addr: "203.30.188.0/22"), IPAddress.new(addr: "203.32.120.0/23"), IPAddress.new(addr: "203.34.28.0/24"),
+    IPAddress.new(addr: "203.34.80.0/24"), IPAddress.new(addr: "203.55.107.0/24"), IPAddress.new(addr: "207.189.149.0/24"),
+    IPAddress.new(addr: "212.110.134.0/23"), IPAddress.new(addr: "45.12.30.0/23"), IPAddress.new(addr: "45.131.208.0/22"),
+    IPAddress.new(addr: "45.131.4.0/22"), IPAddress.new(addr: "45.133.246.0/24"), IPAddress.new(addr: "45.133.247.0/24"),
+    IPAddress.new(addr: "45.14.173.0/24"), IPAddress.new(addr: "45.14.174.0/24"), IPAddress.new(addr: "45.8.104.0/22"),
+    IPAddress.new(addr: "45.85.118.0/23"), IPAddress.new(addr: "5.181.28.0/24"), IPAddress.new(addr: "5.252.118.0/24"),
+    IPAddress.new(addr: "64.72.226.0/24"), IPAddress.new(addr: "89.47.56.0/23"), IPAddress.new(addr: "91.132.150.0/23"),
+    IPAddress.new(addr: "91.192.106.0/23"), IPAddress.new(addr: "91.226.97.0/24"), IPAddress.new(addr: "93.114.64.0/23"),
+
+    # References: https://ipinfo.io/AS132892
+    # AS132892 - Cloudflare, Inc.
+
+    IPAddress.new(addr: "103.21.246.0/24"), IPAddress.new(addr: "103.21.247.0/24"), IPAddress.new(addr: "162.158.64.0/21"),
+    IPAddress.new(addr: "172.69.24.0/21"), IPAddress.new(addr: "172.70.0.0/19"), IPAddress.new(addr: "198.41.144.0/22"),
+    IPAddress.new(addr: "198.41.244.0/24"), IPAddress.new(addr: "198.41.245.0/24"), IPAddress.new(addr: "198.41.246.0/23"),
+    IPAddress.new(addr: "198.41.248.0/23"), IPAddress.new(addr: "198.41.250.0/24"), IPAddress.new(addr: "198.41.251.0/24"),
+    IPAddress.new(addr: "198.41.254.0/24"), IPAddress.new(addr: "198.41.255.0/24"),
+
+    # References: https://ipinfo.io/AS139242
+    # AS139242 - Cloudflare Sydney, LLC
+
+    IPAddress.new(addr: "185.212.144.0/24"),
+
+    # References: https://ipinfo.io/AS202623
+    # AS202623 - Cloudflare Inc
+
+    IPAddress.new(addr: "198.41.148.0/22"), IPAddress.new(addr: "198.41.148.0/24"), IPAddress.new(addr: "198.41.152.0/22"),
+    IPAddress.new(addr: "198.41.245.0/24"), IPAddress.new(addr: "198.41.252.0/24"), IPAddress.new(addr: "198.41.253.0/24"),
+    IPAddress.new(addr: "198.41.254.0/24"), IPAddress.new(addr: "198.41.255.0/24"),
+
+    # References: https://ipinfo.io/AS395747
+    # AS395747 - Cloudflare, Inc.
+
+    IPAddress.new(addr: "103.31.4.0/22"), IPAddress.new(addr: "172.69.209.0/24"), IPAddress.new(addr: "173.245.60.0/23"),
+    IPAddress.new(addr: "198.41.130.0/24"), IPAddress.new(addr: "198.41.132.0/22"), IPAddress.new(addr: "198.41.136.0/22"),
+    IPAddress.new(addr: "8.17.207.0/24"), IPAddress.new(addr: "8.48.131.0/24"),
+
+    # References: https://ipinfo.io/AS203898
+    # AS203898 - Cloudflare Inc
+
+    IPAddress.new(addr: "185.122.0.0/24"),
   }
 
   Ipv6 = Set{
+    # References: https://ipinfo.io/AS13335
+    # AS13335 - Cloudflare, Inc.
+
     IPAddress.new(addr: "2400:cb00:22::/48"), IPAddress.new(addr: "2400:cb00:26::/48"), IPAddress.new(addr: "2400:cb00:34::/48"),
     IPAddress.new(addr: "2400:cb00:41::/48"), IPAddress.new(addr: "2400:cb00:46::/48"), IPAddress.new(addr: "2400:cb00:47::/48"),
     IPAddress.new(addr: "2400:cb00:51::/48"), IPAddress.new(addr: "2400:cb00:55::/48"), IPAddress.new(addr: "2400:cb00:57::/48"),
@@ -115,6 +185,49 @@ module Cloudflare::Subnet
     IPAddress.new(addr: "2a09:bac0:51::/48"), IPAddress.new(addr: "2a09:bac0:80::/48"), IPAddress.new(addr: "2a09:bac0:84::/48"),
     IPAddress.new(addr: "2a09:bac0:85::/48"), IPAddress.new(addr: "2a09:bac0:134::/48"), IPAddress.new(addr: "2a09:bac0:145::/48"),
     IPAddress.new(addr: "2a09:bac0:165::/48"), IPAddress.new(addr: "2a09:bac0:227::/48"), IPAddress.new(addr: "2a09:bac0:232::/48"),
+
+    # References: https://ipinfo.io/AS209242
+    # AS209242 - Cloudflare London, LLC
+
+    IPAddress.new(addr: "2a00:1c88:100::/48"), IPAddress.new(addr: "2a05:7880::/32"), IPAddress.new(addr: "2a06:9ac0::/32"),
+    IPAddress.new(addr: "2a07:180::/32"),
+
+    # References: https://ipinfo.io/AS132892
+    # AS132892 - Cloudflare, Inc.
+
+    IPAddress.new(addr: "2400:cb00:36::/48"), IPAddress.new(addr: "2606:4700:1100::/40"), IPAddress.new(addr: "2a06:98c0:3600::/48"),
+    IPAddress.new(addr: "2a06:98c0:3601::/48"), IPAddress.new(addr: "2a06:98c0:3602::/48"), IPAddress.new(addr: "2a06:98c0:3603::/48"),
+    IPAddress.new(addr: "2a06:98c0:3604::/48"), IPAddress.new(addr: "2a06:98c0:3605::/48"), IPAddress.new(addr: "2a06:98c0:3606::/48"),
+    IPAddress.new(addr: "2a06:98c0:3607::/48"),
+
+    # References: https://ipinfo.io/AS139242
+    # AS139242 - Cloudflare Sydney, LLC
+
+    IPAddress.new(addr: "2a06:98c0:1001::/48"),
+
+    # References: https://ipinfo.io/AS394536
+    # AS394536 - Cloudflare, Inc.
+
+    IPAddress.new(addr: "2606:4700:ff01::/48"),
+
+    # References: https://ipinfo.io/AS202623
+    # AS202623 - Cloudflare Inc
+
+    IPAddress.new(addr: "2a06:98c0:1400::/48"), IPAddress.new(addr: "2a06:98c0:1401::/48"), IPAddress.new(addr: "2a06:98c0:3603::/48"),
+    IPAddress.new(addr: "2a06:98c0:3605::/48"), IPAddress.new(addr: "2a06:98c0:3606::/48"), IPAddress.new(addr: "2a06:98c0:3607::/48"),
+
+    # References: https://ipinfo.io/AS395747
+    # AS395747 - Cloudflare, Inc.
+
+    IPAddress.new(addr: "2400:cb00:131::/48"), IPAddress.new(addr: "2400:cb00:133::/48"), IPAddress.new(addr: "2400:cb00:171::/48"),
+    IPAddress.new(addr: "2400:cb00:302::/48"), IPAddress.new(addr: "2606:4700:2001::/48"), IPAddress.new(addr: "2606:4700:3131::/48"),
+    IPAddress.new(addr: "2606:4700:ff01::/48"), IPAddress.new(addr: "2606:4700:ff02::/48"), IPAddress.new(addr: "2a09:bac0:108::/48"),
+    IPAddress.new(addr: "2a09:bac0:131::/48"),
+
+    # References: https://ipinfo.io/AS203898
+    # AS203898 - Cloudflare Inc
+
+    IPAddress.new(addr: "2a06:98c0:1000::/48"),
   }
 
   def self.includes?(ip_address : Socket::IPAddress) : Bool
