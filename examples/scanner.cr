@@ -35,7 +35,7 @@ timeout:
   connect: 2)
 
 serialization = Cloudflare::Serialization::Scanner.from_yaml text
-options = serialization.to_options
+options = serialization.unwrap
 scanner = Cloudflare::Scanner.new options: options
 
 spawn do

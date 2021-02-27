@@ -10,7 +10,7 @@ module Cloudflare::Serialization
     def initialize(@subnets : Array(Subnet) = [] of Subnet, @caching : Caching = Caching.new, @quirks : Quirks = Quirks.new, @timeout : TimeOut = TimeOut.new)
     end
 
-    def to_options : Cloudflare::Options
+    def unwrap : Cloudflare::Options
       options = Cloudflare::Options.new
       options_scanner = Cloudflare::Options::Scanner.new
 
@@ -22,9 +22,9 @@ module Cloudflare::Serialization
         options_scanner.subnets << subnet
       end
 
-      options_scanner.timeout = timeout.to_options
-      options_scanner.quirks = quirks.to_options
-      options_scanner.caching = caching.to_options
+      options_scanner.timeout = timeout.unwrap
+      options_scanner.quirks = quirks.unwrap
+      options_scanner.caching = caching.unwrap
       options.scanner = options_scanner
 
       options
@@ -40,7 +40,7 @@ module Cloudflare::Serialization
       def initialize(@ipRange : String = String.new, @expects : Array(Expect) = [] of Expect, @excludes : Array(Expect)? = [] of Expect)
       end
 
-      private def to_options_expects : Array(Cloudflare::Options::Scanner::Subnet::Expect)
+      private def unwrap_expects : Array(Cloudflare::Options::Scanner::Subnet::Expect)
         _expects = [] of Cloudflare::Options::Scanner::Subnet::Expect
 
         expects.each do |expect|
@@ -69,7 +69,7 @@ module Cloudflare::Serialization
         _expects.uniq
       end
 
-      private def to_options_excludes : Array(Cloudflare::Options::Scanner::Subnet::Expect)
+      private def unwrap_excludes : Array(Cloudflare::Options::Scanner::Subnet::Expect)
         _excludes = [] of Cloudflare::Options::Scanner::Subnet::Expect
 
         excludes.try &.each do |exclude|
@@ -99,8 +99,8 @@ module Cloudflare::Serialization
       end
 
       def get_options_expects : Array(Cloudflare::Options::Scanner::Subnet::Expect)
-        _expects = to_options_expects
-        _excludes = to_options_excludes
+        _expects = unwrap_expects
+        _excludes = unwrap_excludes
 
         _expects.reject! { |expect| _excludes.each { |exclude| break true if exclude.iata == expect.iata } }
         _expects
@@ -127,7 +127,7 @@ module Cloudflare::Serialization
         @ipAddressCapacityPerSubnet = 3_u8
       end
 
-      def to_options : Cloudflare::Options::Scanner::Caching
+      def unwrap : Cloudflare::Options::Scanner::Caching
         caching = Cloudflare::Options::Scanner::Caching.new
 
         caching.ipAddressCapacityPerSubnet = ipAddressCapacityPerSubnet
@@ -171,7 +171,7 @@ module Cloudflare::Serialization
       end
     end
 
-    def to_options : Cloudflare::Options::Scanner::Quirks
+    def unwrap : Cloudflare::Options::Scanner::Quirks
       quirks = Cloudflare::Options::Scanner::Quirks.new
 
       quirks.numberOfScansPerSubnet = numberOfScansPerSubnet
@@ -196,7 +196,7 @@ module Cloudflare::Serialization
       @connect = 2_i32
     end
 
-    def to_options : Cloudflare::TimeOut
+    def unwrap : Cloudflare::TimeOut
       timeout = Cloudflare::TimeOut.new
 
       timeout.read = read

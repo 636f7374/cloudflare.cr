@@ -38,7 +38,7 @@ module Cloudflare::Serialization
       end
     end
 
-    def to_options : Cloudflare::Options
+    def unwrap : Cloudflare::Options
       options = Cloudflare::Options.new
 
       radar = Cloudflare::Options::Radar.new
@@ -46,7 +46,7 @@ module Cloudflare::Serialization
       radar.scanIpAddressType = scanIpAddressType
       radar.numberOfScansPerSubnet = numberOfScansPerSubnet
       radar.maximumNumberOfFailuresPerSubnet = maximumNumberOfFailuresPerSubnet
-      radar.timeout = timeout.to_options
+      radar.timeout = timeout.unwrap
 
       check_skip_range!
       radar.skipRange = (skipRange.first..skipRange.last)
@@ -72,7 +72,7 @@ module Cloudflare::Serialization
         @connect = 2_i32
       end
 
-      def to_options : Cloudflare::TimeOut
+      def unwrap : Cloudflare::TimeOut
         timeout = Cloudflare::TimeOut.new
 
         timeout.read = read

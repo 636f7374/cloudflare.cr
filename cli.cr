@@ -9,7 +9,7 @@ option_parser.parse
 import, output_path = option_parser.get!
 starting_time = Time.local
 export = Cloudflare::Serialization::Export.new
-radar = Cloudflare::Radar.new options: import.to_options
+radar = Cloudflare::Radar.new options: import.unwrap
 
 concurrent_mutex = Mutex.new :unchecked
 concurrent_fibers = Set(Fiber).new
