@@ -16,7 +16,7 @@ module Cloudflare::CommandLine
       @scanIpAddressType = Cloudflare::Options::Radar::ScanIpAddressType::Ipv4Only
       @numberOfScansPerSubnet = 25_i32
       @maximumNumberOfFailuresPerSubnet = 15_i32
-      @skipRange = [6_i32, 12_i32]
+      @skipRange = [3_i32, 6_i32]
       @clearIfOnlyNeedles = [[Needles::Edge::LosAngeles_UnitedStates], [Needles::Edge::SanJose_UnitedStates], [
         Needles::Edge::LosAngeles_UnitedStates, Needles::Edge::SanJose_UnitedStates,
       ]]
