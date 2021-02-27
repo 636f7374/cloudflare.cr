@@ -1,0 +1,11 @@
+name: cloudflare
+version: 0.1.0
+
+dependencies:
+  ipaddress:
+    github: Sija/ipaddress.cr
+
+authors:
+  - 636f7374
+
+license: GPLv3
