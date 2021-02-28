@@ -1,52 +1,86 @@
 module Cloudflare::Caching
   class Scanner
     getter options : Options
-    getter entries : Hash(IPAddress, Set(Tuple(Needles::IATA, UInt8, Socket::IPAddress)))
+    getter entries : Hash(IPAddress, Set(Entry))
+    getter latestCleanedUp : Time
     getter mutex : Mutex
 
     def initialize(@options : Options)
-      @entries = Hash(IPAddress, Set(Tuple(Needles::IATA, UInt8, Socket::IPAddress))).new
+      @entries = Hash(IPAddress, Set(Entry)).new
+      @latestCleanedUp = Time.local
       @mutex = Mutex.new :unchecked
     end
 
-    def set(ip_range : IPAddress, iata : Needles::IATA, priority : UInt8, ip_address : Socket::IPAddress)
-      @mutex.synchronize do
-        entry = entries[ip_range] ||= Set(Tuple(Needles::IATA, UInt8, Socket::IPAddress)).new
+    private def refresh_latest_cleaned_up
+      @mutex.synchronize { @latestCleanedUp = Time.local }
+    end
 
-        if entry.size < options.scanner.caching.ipAddressCapacityPerSubnet
-          entry << Tuple.new iata, priority, ip_address
-          entries[ip_range] = entry
+    private def need_cleared? : Bool
+      interval = Time.local - (@mutex.synchronize { latestCleanedUp })
+      interval > options.scanner.caching.clearInterval
+    end
+
+    private def inactive_entry_cleanup : Bool
+      return false unless need_cleared?
+
+      @mutex.synchronize do
+        time_local = Time.local
+
+        entries.each do |ip_range, entry_set|
+          temporary_set = Set(Entry).new
+
+          entry_set.each do |entry|
+            next if (time_local - entry.createdAt) > options.scanner.caching.clearInterval
+            temporary_set << entry
+          end
+
+          entries[ip_range] = temporary_set
+        end
+      end
+
+      true
+    end
+
+    def set(ip_range : IPAddress, iata : Needles::IATA, priority : UInt8, ip_address : Socket::IPAddress)
+      inactive_entry_cleanup
+
+      @mutex.synchronize do
+        entry_set = entries[ip_range] ||= Set(Entry).new
+
+        if entry_set.size < options.scanner.caching.ipAddressCapacityPerSubnet
+          entry_set << Entry.new iata: iata, priority: priority, ipAddress: ip_address
+          entries[ip_range] = entry_set
 
           return
         end
 
-        iata_count = entry.count { |item| iata == item.first }
-        percentage = ((iata_count / entry.size) * 100_i32).round.to_i32
+        iata_count = entry_set.count { |entry| iata == entry.iata }
+        percentage = ((iata_count / entry_set.size) * 100_i32).round.to_i32
 
         case iata_count
         when .zero?
-          entry = (entry - Set{entry.first})
-          entry << Tuple.new iata, priority, ip_address
-          entries[ip_range] = entry
+          entry_set = (entry_set - Set{entry_set.first})
+          entry_set << Entry.new iata: iata, priority: priority, ipAddress: ip_address
+          entries[ip_range] = entry_set
         else
           case percentage
           when .< 50_i32
-            entry.each do |item|
-              next if iata == item.first
+            entry_set.each do |entry|
+              next if iata == entry.iata
 
-              entry = (entry - Set{entry.first})
-              entry << Tuple.new iata, priority, ip_address
-              entries[ip_range] = entry
+              entry_set = (entry_set - Set{entry})
+              entry_set << Entry.new iata: iata, priority: priority, ipAddress: ip_address
+              entries[ip_range] = entry_set
 
               return
             end
           else
-            entry.each do |item|
-              next unless iata == item.first
+            entry_set.each do |entry|
+              next unless iata == entry.iata
 
-              entry = (entry - Set{item})
-              entry << Tuple.new iata, priority, ip_address
-              entries[ip_range] = entry
+              entry_set = (entry_set - Set{entry})
+              entry_set << Entry.new iata: iata, priority: priority, ipAddress: ip_address
+              entries[ip_range] = entry_set
 
               return
             end
@@ -57,20 +91,28 @@ module Cloudflare::Caching
 
     def to_tuple_ipaddresses : Array(Tuple(Needles::IATA, Socket::IPAddress))
       _entries = @mutex.synchronize { entries.dup }
-      list = Set(Tuple(UInt8, Needles::IATA, Socket::IPAddress)).new
+      list = [] of Tuple(UInt8, Needles::IATA, Socket::IPAddress)
 
-      _entries.each do |ip_range, entry|
-        entry.each do |item|
-          iata, priority, ip_address = item
-          list << Tuple.new priority, iata, ip_address
-        end
+      _entries.each do |ip_range, entry_set|
+        entry_set.each { |entry| list << Tuple.new entry.priority, entry.iata, entry.ipAddress }
       end
 
-      list = list.to_a.sort { |a, b| a.first <=> b.first }.to_set
+      list = list.sort { |a, b| a.first <=> b.first }
 
       list.map do |item|
         priority, iata, ip_address = item
         Tuple.new iata, ip_address
+      end
+    end
+
+    struct Entry
+      property iata : Needles::IATA
+      property priority : UInt8
+      property ipAddress : Socket::IPAddress
+      property createdAt : Time
+
+      def initialize(@iata : Needles::IATA, @priority : UInt8, @ipAddress : Socket::IPAddress)
+        @createdAt = Time.local
       end
     end
   end

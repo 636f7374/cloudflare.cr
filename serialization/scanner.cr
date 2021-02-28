@@ -122,15 +122,21 @@ module Cloudflare::Serialization
       include YAML::Serializable
 
       property ipAddressCapacityPerSubnet : UInt8
+      property clearInterval : UInt8
 
       def initialize
         @ipAddressCapacityPerSubnet = 3_u8
+        @clearInterval = 30_u8
       end
 
       def unwrap : Cloudflare::Options::Scanner::Caching
         caching = Cloudflare::Options::Scanner::Caching.new
 
         caching.ipAddressCapacityPerSubnet = ipAddressCapacityPerSubnet
+
+        clear_interval = clearInterval
+        clear_interval = 1_u8 if 1_u8 > clear_interval
+        caching.clearInterval = clear_interval.seconds
 
         caching
       end
@@ -145,7 +151,7 @@ module Cloudflare::Serialization
     property skipRange : Array(Int32)
     property sleep : UInt8
 
-    def initialize(@numberOfScansPerSubnet : Int32 = 25_i32, @maximumNumberOfFailuresPerSubnet : Int32 = 15_i32, @skipRange : Array(Int32) = [3_i32, 6_i32] of Int32, @sleep : UInt8 = 2_u8)
+    def initialize(@numberOfScansPerSubnet : Int32 = 25_i32, @maximumNumberOfFailuresPerSubnet : Int32 = 15_i32, @skipRange : Array(Int32) = [3_i32, 6_i32] of Int32, @sleep : UInt8 = 1_u8)
     end
 
     private def check_skip_range!

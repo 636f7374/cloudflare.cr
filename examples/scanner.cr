@@ -22,10 +22,11 @@ subnets:
         type: iata
 caching:
   ipAddressCapacityPerSubnet: 4
+  clearInterval: 30
 quirks:
   numberOfScansPerSubnet: 50
   maximumNumberOfFailuresPerSubnet: 25
-  sleep: 2
+  sleep: 1
   skipRange:
     - 1
     - 2

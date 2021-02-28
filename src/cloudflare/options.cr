@@ -34,9 +34,11 @@ struct Cloudflare::Options
 
     struct Caching
       property ipAddressCapacityPerSubnet : UInt8
+      property clearInterval : Time::Span
 
       def initialize
         @ipAddressCapacityPerSubnet = 3_u8
+        @clearInterval = 30_u8.seconds
       end
     end
 
@@ -46,7 +48,7 @@ struct Cloudflare::Options
       property skipRange : Range(Int32, Int32)
       property sleep : Time::Span
 
-      def initialize(@numberOfScansPerSubnet : Int32 = 25_i32, @maximumNumberOfFailuresPerSubnet : Int32 = 15_i32, @skipRange : Range(Int32, Int32) = (6_i32..12_i32), @sleep : Time::Span = 2_u8.seconds)
+      def initialize(@numberOfScansPerSubnet : Int32 = 25_i32, @maximumNumberOfFailuresPerSubnet : Int32 = 15_i32, @skipRange : Range(Int32, Int32) = (6_i32..12_i32), @sleep : Time::Span = 1_u8.seconds)
       end
     end
   end
