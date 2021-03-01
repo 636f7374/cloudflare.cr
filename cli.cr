@@ -5,11 +5,11 @@ require "./cli/*"
 
 option_parser = Cloudflare::CommandLine::OptionParser.new
 option_parser.parse
-
-import, output_path = option_parser.get!
+serialization_redar, output_path = option_parser.get!
 starting_time = Time.local
+
 export = Cloudflare::Serialization::Export.new
-radar = Cloudflare::Radar.new options: import.unwrap
+radar = serialization_redar.unwrap
 
 concurrent_mutex = Mutex.new :unchecked
 concurrent_fibers = Set(Fiber).new

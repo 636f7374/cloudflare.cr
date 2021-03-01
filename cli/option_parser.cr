@@ -1,16 +1,16 @@
 module Cloudflare::CommandLine
   class OptionParser
-    property import : Cloudflare::Serialization::Import?
+    property radar : Cloudflare::Serialization::Radar?
 
-    def initialize(@import : Cloudflare::Serialization::Import? = nil)
+    def initialize(@radar : Cloudflare::Serialization::Radar? = nil)
     end
 
-    def get! : Tuple(Cloudflare::Serialization::Import, String)
-      abort "Error: Radar import information is not specified!" unless _import = import
-      abort "Error: No Radar output path specified!" unless output_path = _import.outputPath
+    def get! : Tuple(Cloudflare::Serialization::Radar, String)
+      abort "Error: Radar import information is not specified!" unless _radar = radar
+      abort "Error: No Radar output path specified!" unless output_path = _radar.outputPath
 
       output_path = output_path.gsub "$HOME", (ENV["HOME"]? || String.new)
-      Tuple.new _import, output_path
+      Tuple.new _radar, output_path
     end
 
     def parse(args : Array(String) = ARGV)
@@ -18,11 +18,11 @@ module Cloudflare::CommandLine
         parser.banner = "Usage: radar [command] [--] [arguments]"
 
         parser.on "-i +", "--import +", "Specify Radar configuration file path." do |path|
-          @import = Cloudflare::Serialization::Import.from_json File.read(filename: path)
+          @radar = Cloudflare::Serialization::Radar.from_json File.read(filename: path)
         end
 
         parser.on "-o +", "--output +", "Specify the output path of the Radar." do |path|
-          @import.try &.outputPath = path
+          @radar.try &.outputPath = path
         end
 
         parser.on "-v", "--version", "Get version information of this Radar." do

@@ -1,5 +1,5 @@
 module Cloudflare::Serialization
-  struct Import
+  struct Radar
     include JSON::Serializable
 
     property concurrentCount : Int32
@@ -38,7 +38,7 @@ module Cloudflare::Serialization
       end
     end
 
-    def unwrap : Cloudflare::Options
+    def unwrap : Cloudflare::Radar
       options = Cloudflare::Options.new
 
       radar = Cloudflare::Options::Radar.new
@@ -56,7 +56,7 @@ module Cloudflare::Serialization
       end
 
       options.radar = radar
-      options
+      Cloudflare::Radar.new options: options
     end
 
     struct TimeOut
