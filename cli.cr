@@ -29,10 +29,10 @@ loop do
   all_dead ? STDOUT.puts(progress) : STDOUT.print(progress)
 
   if all_dead
-    radar.storage.each do |storage_entry|
+    radar.storage.each do |ip_range, entry_set|
       export_entry = Cloudflare::Serialization::Export::Entry.new
-      export_entry.ipRange = storage_entry.first
-      storage_entry.last.list.each { |name, count| export_entry.list[name.to_s] = count }
+      export_entry.ipRange = ip_range
+      entry_set.list.each { |name, count| export_entry.list[name.to_s] = count }
 
       export.subnets << export_entry
     end

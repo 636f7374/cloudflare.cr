@@ -12,6 +12,10 @@ class Cloudflare::Radar
       @mutex.synchronize { entries.size }
     end
 
+    def each(&block : String, Entry ->)
+      @mutex.synchronize { entries.each { |ip_range, entry_set| yield ip_range, entry_set } }
+    end
+
     def clear_if_only_needles(options : Options)
       @mutex.synchronize do
         options.radar.clearIfOnlyNeedles.each do |needles|
@@ -32,10 +36,6 @@ class Cloudflare::Radar
           end
         end
       end
-    end
-
-    def each(&block : Tuple(String, Entry) ->)
-      @mutex.synchronize { entries.each { |entry| yield entry } }
     end
 
     def set(ip_range : IPAddress, edge : Needles::Edge) : Bool
