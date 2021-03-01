@@ -10,7 +10,7 @@ module Cloudflare::Serialization
     def initialize(@subnets : Array(Subnet) = [] of Subnet, @caching : Caching = Caching.new, @quirks : Quirks = Quirks.new, @timeout : TimeOut = TimeOut.new)
     end
 
-    def unwrap : Cloudflare::Options
+    def unwrap : Cloudflare::Scanner
       options = Cloudflare::Options.new
       options_scanner = Cloudflare::Options::Scanner.new
 
@@ -27,7 +27,7 @@ module Cloudflare::Serialization
       options_scanner.caching = caching.unwrap
       options.scanner = options_scanner
 
-      options
+      Cloudflare::Scanner.new options: options
     end
 
     struct Subnet
@@ -132,7 +132,9 @@ module Cloudflare::Serialization
       def unwrap : Cloudflare::Options::Scanner::Caching
         caching = Cloudflare::Options::Scanner::Caching.new
 
-        caching.ipAddressCapacityPerSubnet = ipAddressCapacityPerSubnet
+        ip_address_capacity_per_subnet = ipAddressCapacityPerSubnet
+        ip_address_capacity_per_subnet = 1_u8 if 1_u8 > ip_address_capacity_per_subnet
+        caching.ipAddressCapacityPerSubnet = ip_address_capacity_per_subnet
 
         clear_interval = clearInterval
         clear_interval = 1_u8 if 1_u8 > clear_interval

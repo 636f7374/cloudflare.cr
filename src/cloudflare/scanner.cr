@@ -1,11 +1,11 @@
 class Cloudflare::Scanner
-  getter caching : Caching::Scanner
   getter options : Options
+  getter caching : Caching::Scanner
   getter terminated : Bool
   getter running : Bool
   getter mutex : Mutex
 
-  def initialize(@caching : Caching::Scanner, @options : Options)
+  def initialize(@options : Options, @caching : Caching::Scanner)
     @terminated = false
     @running = false
     @mutex = Mutex.new :unchecked
@@ -13,7 +13,7 @@ class Cloudflare::Scanner
 
   def self.new(options : Options)
     caching = Cloudflare::Caching::Scanner.new options: options
-    new caching: caching, options: options
+    new options: options, caching: caching
   end
 
   def terminate
