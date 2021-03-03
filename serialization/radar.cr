@@ -1,6 +1,6 @@
 module Cloudflare::Serialization
   struct Radar
-    include JSON::Serializable
+    include YAML::Serializable
 
     property concurrentCount : Int32
     property scanIpAddressType : Cloudflare::Options::Radar::ScanIpAddressType
@@ -60,7 +60,7 @@ module Cloudflare::Serialization
     end
 
     struct TimeOut
-      include JSON::Serializable
+      include YAML::Serializable
 
       property read : Int32
       property write : Int32

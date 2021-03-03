@@ -36,6 +36,7 @@ class Cloudflare::Radar
   private def to_prefix_24(subnets : Set(IPAddress::IPv4 | IPAddress::IPv6)) : Set(IPAddress::IPv4 | IPAddress::IPv6)
     concurrent_mutex = Mutex.new :unchecked
     concurrent_fibers = Array(Fiber).new
+    list_mutex = Mutex.new :unchecked
     list = Set(IPAddress::IPv4 | IPAddress::IPv6).new
 
     subnets.each do |ip_range|
@@ -45,7 +46,7 @@ class Cloudflare::Radar
             break unless ip_address.is_a? IPAddress::IPv4
             next unless ip_address.octets.last.zero?
 
-            concurrent_mutex.synchronize { list << IPAddress.new String.build { |io| io << ip_address.address << "/24" } }
+            list_mutex.synchronize { list << IPAddress.new String.build { |io| io << ip_address.address << "/24" } }
           end
 
           next

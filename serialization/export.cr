@@ -1,6 +1,6 @@
 module Cloudflare::Serialization
   struct Export
-    include JSON::Serializable
+    include YAML::Serializable
 
     property subnets : Array(Entry)
     property startingTime : String
@@ -10,7 +10,7 @@ module Cloudflare::Serialization
     end
 
     struct Entry
-      include JSON::Serializable
+      include YAML::Serializable
 
       property ipRange : String
       property list : Hash(String, Int64)

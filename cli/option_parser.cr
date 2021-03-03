@@ -18,7 +18,7 @@ module Cloudflare::CommandLine
         parser.banner = "Usage: radar [command] [--] [arguments]"
 
         parser.on "-i +", "--import +", "Specify Radar configuration file path." do |path|
-          @radar = Cloudflare::Serialization::Radar.from_json File.read(filename: path)
+          @radar = Cloudflare::Serialization::Radar.from_yaml File.read(filename: path)
         end
 
         parser.on "-o +", "--output +", "Specify the output path of the Radar." do |path|

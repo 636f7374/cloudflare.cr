@@ -39,7 +39,7 @@ loop do
 
     export.createdAt = Time.local.to_s
     output_io = File.open filename: output_path, mode: "wb"
-    output_io.write export.to_json.to_slice
+    output_io.write export.to_yaml.to_slice
     output_io.close
 
     break

@@ -36,27 +36,29 @@
 
 * Radar Configuration File
 
-```json
-{
-  "outputPath": "$HOME/output.json",
-  "concurrentCount": 220,
-  "scanIpAddressType": 0,
-  "numberOfScansPerSubnet": 50,
-  "maximumNumberOfFailuresPerSubnet": 15,
-  "skipRange": [3, 6],
-  "clearIfOnlyNeedles": [
-    ["LosAngeles_UnitedStates"], 
-    ["SanJose_UnitedStates"], 
-    ["LosAngeles_UnitedStates", "SanJose_UnitedStates"], 
-    ["LosAngeles_UnitedStates", "Frankfurt_Germany"], 
-    ["LosAngeles_UnitedStates", "Munich_Germany"]
-  ],
-  "timeout": {
-    "read": 2,
-    "write": 2,
-    "connect": 2
-  }
-}
+```yaml
+---
+outputPath: $HOME/output.yml
+concurrentCount: 220
+scanIpAddressType: 0
+numberOfScansPerSubnet: 50
+maximumNumberOfFailuresPerSubnet: 15
+skipRange:
+  - 3
+  - 6
+clearIfOnlyNeedles:
+  - - LosAngeles_UnitedStates
+  - - SanJose_UnitedStates
+  - - LosAngeles_UnitedStates
+    - SanJose_UnitedStates
+  - - LosAngeles_UnitedStates
+    - Frankfurt_Germany
+  - - LosAngeles_UnitedStates
+    - Munich_Germany
+timeout:
+  read: 2
+  write: 2
+  connect: 2
 ```
 
 ### Used as Shard
