@@ -1,4 +1,4 @@
-module Cloudflare::Serialization
+module Cloudflare::Serialized
   struct Scanner
     include YAML::Serializable
 

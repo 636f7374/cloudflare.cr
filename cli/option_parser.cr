@@ -1,11 +1,11 @@
 module Cloudflare::CommandLine
   class OptionParser
-    property radar : Cloudflare::Serialization::Radar?
+    property radar : Cloudflare::Serialized::Radar?
 
-    def initialize(@radar : Cloudflare::Serialization::Radar? = nil)
+    def initialize(@radar : Cloudflare::Serialized::Radar? = nil)
     end
 
-    def get! : Tuple(Cloudflare::Serialization::Radar, String)
+    def get! : Tuple(Cloudflare::Serialized::Radar, String)
       abort "Error: Radar import information is not specified!" unless _radar = radar
       abort "Error: No Radar output path specified!" unless output_path = _radar.outputPath
 
@@ -18,7 +18,7 @@ module Cloudflare::CommandLine
         parser.banner = "Usage: radar [command] [--] [arguments]"
 
         parser.on "-i +", "--import +", "Specify Radar configuration file path." do |path|
-          @radar = Cloudflare::Serialization::Radar.from_yaml File.read(filename: path)
+          @radar = Cloudflare::Serialized::Radar.from_yaml File.read(filename: path)
         end
 
         parser.on "-o +", "--output +", "Specify the output path of the Radar." do |path|

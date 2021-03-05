@@ -1,6 +1,6 @@
 require "../src/cloudflare.cr"
-require "../serialization/serialization.cr"
-require "../serialization/*"
+require "../serialized/serialized.cr"
+require "../serialized/*"
 
 text = %(---
 subnets:
@@ -35,8 +35,8 @@ timeout:
   write: 2
   connect: 2)
 
-serialization = Cloudflare::Serialization::Scanner.from_yaml text
-scanner = serialization.unwrap
+serialized = Cloudflare::Serialized::Scanner.from_yaml text
+scanner = serialized.unwrap
 
 spawn do
   scanner.perform

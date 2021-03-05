@@ -1,15 +1,15 @@
 require "./src/cloudflare.cr"
-require "./serialization/serialization.cr"
-require "./serialization/*"
+require "./serialized/serialized.cr"
+require "./serialized/*"
 require "./cli/*"
 
 option_parser = Cloudflare::CommandLine::OptionParser.new
 option_parser.parse
-serialization_redar, output_path = option_parser.get!
+serialized_redar, output_path = option_parser.get!
 starting_time = Time.local
 
-export = Cloudflare::Serialization::Export.new
-radar = serialization_redar.unwrap
+export = Cloudflare::Serialized::Export.new
+radar = serialized_redar.unwrap
 
 concurrent_mutex = Mutex.new :unchecked
 concurrent_fibers = Set(Fiber).new
@@ -30,7 +30,7 @@ loop do
 
   if all_dead
     radar.storage.each do |ip_range, entry_set|
-      export_entry = Cloudflare::Serialization::Export::Entry.new
+      export_entry = Cloudflare::Serialized::Export::Entry.new
       export_entry.ipRange = ip_range
       entry_set.list.each { |name, count| export_entry.list[name.to_s] = count }
 

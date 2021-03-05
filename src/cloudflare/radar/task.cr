@@ -39,8 +39,8 @@ class Cloudflare::Radar
 
         socket.close rescue nil
         next failure_times += 1_i32 unless value = http_response.headers["CF-RAY"]?
-        ray_id, delimiter, iata_string = value.rpartition "-"
-        next failure_times += 1_i32 unless iata = Needles::IATA.parse? iata_string
+        ray_id, delimiter, text_iata = value.rpartition "-"
+        next failure_times += 1_i32 unless iata = Needles::IATA.parse? text_iata
         next failure_times += 1_i32 unless edge = iata.to_edge?
 
         each_times += 1_i32

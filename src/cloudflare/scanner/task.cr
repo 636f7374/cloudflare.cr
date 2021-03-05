@@ -39,8 +39,8 @@ class Cloudflare::Scanner
 
         socket.close rescue nil
         next failure_times += 1_i32 unless value = http_response.headers["CF-RAY"]?
-        ray_id, delimiter, iata_string = value.rpartition "-"
-        next failure_times += 1_i32 unless iata = Needles::IATA.parse? iata_string
+        ray_id, delimiter, text_iata = value.rpartition "-"
+        next failure_times += 1_i32 unless iata = Needles::IATA.parse? text_iata
         next unless expect = subnet.expects.find { |expect| iata == expect.iata }
 
         each_times += 1_i32
