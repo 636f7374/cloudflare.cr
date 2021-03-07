@@ -28,8 +28,8 @@ class Cloudflare::Scanner
   end
 
   def perform
-    raise Exception.new "Scanner.perform: Scanner is already running!" if running
-    raise Exception.new "Scanner.perform: Scanner has terminated!" if terminated
+    raise Exception.new "Scanner.perform: Scanner is already running!" if @mutex.synchronize { running }
+    raise Exception.new "Scanner.perform: Scanner has terminated!" if @mutex.synchronize { terminated }
     @mutex.synchronize { @running = true }
 
     loop do
