@@ -43,7 +43,7 @@ spawn do
 end
 
 loop do
-  STDOUT.puts [scanner.caching.to_tuple_ipaddresses]
+  STDOUT.puts [scanner.caching.to_tuple_ip_addresses]
   STDOUT.puts
 
   sleep 10_f32.seconds

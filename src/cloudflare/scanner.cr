@@ -16,6 +16,10 @@ class Cloudflare::Scanner
     new options: options, caching: caching
   end
 
+  def caching_to_tuple_ip_addresses : Array(Tuple(Needles::IATA, Socket::IPAddress))
+    caching.to_tuple_ip_addresses
+  end
+
   def terminate
     @mutex.synchronize do
       @running = false

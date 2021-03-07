@@ -89,7 +89,7 @@ module Cloudflare::Caching
       end
     end
 
-    def to_tuple_ipaddresses : Array(Tuple(Needles::IATA, Socket::IPAddress))
+    def to_tuple_ip_addresses : Array(Tuple(Needles::IATA, Socket::IPAddress))
       _entries = @mutex.synchronize { entries.dup }
       list = [] of Tuple(UInt8, Needles::IATA, Socket::IPAddress)
 
