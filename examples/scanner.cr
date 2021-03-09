@@ -10,7 +10,7 @@ subnets:
         priority: 0
         type: iata
       - name: ist
-        priority: 1
+        priority: 2
         type: iata
     excludes:
       - name: sin
@@ -18,7 +18,7 @@ subnets:
   - ipRange: 172.64.228.0/24
     expects:
       - name: nrt
-        priority: 2
+        priority: 1
         type: iata
 caching:
   ipAddressCapacityPerSubnet: 4

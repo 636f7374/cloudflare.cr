@@ -40,7 +40,7 @@
 ---
 outputPath: $HOME/output.yml
 concurrentCount: 220
-scanIpAddressType: 0
+scanIpAddressType: ipv4_only
 numberOfScansPerSubnet: 50
 maximumNumberOfFailuresPerSubnet: 15
 skipRange:

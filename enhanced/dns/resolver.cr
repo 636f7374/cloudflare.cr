@@ -7,11 +7,11 @@ class DNS::Resolver
     @cloudflare
   end
 
-  def getaddrinfo(host : String, port : Int32 = 0_i32) : Tuple(FetchType, Array(Socket::IPAddress))
+  def getaddrinfo(host : String, port : Int32 = 0_i32, answer_safety_first : Bool = options.addrinfo.answerSafetyFirst) : Tuple(FetchType, Array(Socket::IPAddress))
     # This function is used as an overloadable.
     # E.g. Cloudflare.
 
-    fetch_type, ip_addresses = tuple = getaddrinfo! host: host, port: port
+    fetch_type, ip_addresses = tuple = getaddrinfo! host: host, port: port, answer_safety_first: answer_safety_first
     _cloudflare = cloudflare
 
     allowed_fetch_type = fetch_type.server? || fetch_type.caching? || fetch_type.local?

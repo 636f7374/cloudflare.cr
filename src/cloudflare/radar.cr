@@ -24,29 +24,34 @@ class Cloudflare::Radar
     true
   end
 
-  def perform
+  def perform : Bool
     reset_tasks_number
 
     prefix24_set = to_prefix_24 subnets: get_subnets
     numberOfTasks.set prefix24_set.size.to_i64
 
     concurrent_process_task subnets: prefix24_set
+
+    true
   end
 
   private def to_prefix_24(subnets : Set(IPAddress::IPv4 | IPAddress::IPv6)) : Set(IPAddress::IPv4 | IPAddress::IPv6)
     concurrent_mutex = Mutex.new :unchecked
-    concurrent_fibers = Array(Fiber).new
+    concurrent_fibers = Set(Fiber).new
     list_mutex = Mutex.new :unchecked
     list = Set(IPAddress::IPv4 | IPAddress::IPv6).new
 
     subnets.each do |ip_range|
+      sleep 0.02_f32.seconds
+
       task_fiber = spawn do
         if (ip_range.prefix < 24_i32) && ip_range.is_a?(IPAddress::IPv4)
           ip_range.each do |ip_address|
             break unless ip_address.is_a? IPAddress::IPv4
             next unless ip_address.octets.last.zero?
 
-            list_mutex.synchronize { list << IPAddress.new String.build { |io| io << ip_address.address << "/24" } }
+            prefix_24 = IPAddress.new String.build { |io| io << ip_address.address << "/24" }
+            list_mutex.synchronize { list << prefix_24 }
           end
 
           next
