@@ -86,7 +86,8 @@ $ make test
 
 ## Credit
 
-* [\_Icon - Freepik/GraphicDesign](https://www.flaticon.com/packs/graphic-design-125)
+* [\_Icon - Freepik/LawAndJustice](https://www.flaticon.com/packs/law-and-justice-62)
+* [Shard - Sija/ipaddress.cr](https://github.com/sija/ipaddress.cr)
 
 ## Contributors
 
