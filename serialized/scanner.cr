@@ -6,8 +6,9 @@ module Cloudflare::Serialized
     property caching : Caching
     property quirks : Quirks
     property timeout : TimeOut
+    property switcher : Switcher
 
-    def initialize(@subnets : Array(Subnet) = [] of Subnet, @caching : Caching = Caching.new, @quirks : Quirks = Quirks.new, @timeout : TimeOut = TimeOut.new)
+    def initialize(@subnets : Array(Subnet) = [] of Subnet, @caching : Caching = Caching.new, @quirks : Quirks = Quirks.new, @timeout : TimeOut = TimeOut.new, @switcher : Switcher = Switcher.new)
     end
 
     def unwrap : Cloudflare::Scanner
@@ -25,7 +26,9 @@ module Cloudflare::Serialized
       options_scanner.timeout = timeout.unwrap
       options_scanner.quirks = quirks.unwrap
       options_scanner.caching = caching.unwrap
+
       options.scanner = options_scanner
+      options.switcher = switcher.unwrap
 
       Cloudflare::Scanner.new options: options
     end
@@ -188,30 +191,6 @@ module Cloudflare::Serialized
       quirks.sleep = sleep.seconds
 
       quirks
-    end
-  end
-
-  struct TimeOut
-    include YAML::Serializable
-
-    property read : Int32
-    property write : Int32
-    property connect : Int32
-
-    def initialize
-      @read = 2_i32
-      @write = 2_i32
-      @connect = 2_i32
-    end
-
-    def unwrap : Cloudflare::TimeOut
-      timeout = Cloudflare::TimeOut.new
-
-      timeout.read = read
-      timeout.write = write
-      timeout.connect = connect
-
-      timeout
     end
   end
 end

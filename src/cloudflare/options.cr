@@ -1,10 +1,19 @@
 struct Cloudflare::Options
+  property switcher : Switcher
   property radar : Radar
   property scanner : Scanner
 
   def initialize
     @radar = Radar.new
     @scanner = Scanner.new
+    @switcher = Switcher.new
+  end
+
+  struct Switcher
+    property getaddrinfoOverride : Bool
+
+    def initialize(@getaddrinfoOverride : Bool = true)
+    end
   end
 
   struct Scanner

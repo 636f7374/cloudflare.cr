@@ -30,6 +30,8 @@ quirks:
   skipRange:
     - 1
     - 2
+switcher:
+  getaddrinfoOverride: true
 timeout:
   read: 2
   write: 2
