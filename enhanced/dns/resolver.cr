@@ -17,7 +17,7 @@ class DNS::Resolver
     allowed_fetch_type = fetch_type.server? || fetch_type.caching? || fetch_type.local?
     consistent_port = ip_addresses.all? { |ip_address| port == ip_address.port }
 
-    if _cloudflare && _cloudflare.options.switcher.getaddrinfoOverride && consistent_port && allowed_fetch_type
+    if _cloudflare && _cloudflare.options.switcher.addrinfoOverride && consistent_port && allowed_fetch_type
       unless ip_addresses.empty?
         subnet_includes = Cloudflare::Subnet.includes? ip_addresses.first
       end

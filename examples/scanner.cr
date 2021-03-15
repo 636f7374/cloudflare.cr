@@ -31,7 +31,7 @@ quirks:
     - 1
     - 2
 switcher:
-  getaddrinfoOverride: true
+  addrinfoOverride: true
 timeout:
   read: 2
   write: 2

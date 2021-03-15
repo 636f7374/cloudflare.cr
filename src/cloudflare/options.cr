@@ -10,9 +10,9 @@ struct Cloudflare::Options
   end
 
   struct Switcher
-    property getaddrinfoOverride : Bool
+    property addrinfoOverride : Bool
 
-    def initialize(@getaddrinfoOverride : Bool = true)
+    def initialize(@addrinfoOverride : Bool = true)
     end
   end
 
