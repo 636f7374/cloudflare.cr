@@ -5,6 +5,13 @@ module Cloudflare::CommandLine
     def initialize(@radar : Cloudflare::Serialized::Radar? = nil)
     end
 
+    def self.parse(args : Array(String) = ARGV) : OptionParser
+      option_parser = new
+      option_parser.parse args: args
+
+      option_parser
+    end
+
     def get! : Tuple(Cloudflare::Serialized::Radar, String)
       abort "Error: Radar import information is not specified!" unless _radar = radar
       abort "Error: No Radar output path specified!" unless output_path = _radar.outputPath

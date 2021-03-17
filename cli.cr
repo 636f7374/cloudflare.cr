@@ -3,11 +3,10 @@ require "./serialized/serialized.cr"
 require "./serialized/*"
 require "./cli/*"
 
-option_parser = Cloudflare::CommandLine::OptionParser.new
-option_parser.parse
+option_parser = Cloudflare::CommandLine::OptionParser.parse args: ARGV
 serialized_redar, output_path = option_parser.get!
-starting_time = Time.local
 
+starting_time = Time.local
 export = Cloudflare::Serialized::Export.new
 radar = serialized_redar.unwrap
 

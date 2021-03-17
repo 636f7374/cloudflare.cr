@@ -21,10 +21,7 @@ class Cloudflare::Scanner
   end
 
   def terminate
-    @mutex.synchronize do
-      @running = false
-      @terminated = true
-    end
+    @mutex.synchronize { @terminated = true }
   end
 
   def perform
@@ -35,6 +32,7 @@ class Cloudflare::Scanner
     loop do
       concurrent_mutex = Mutex.new :unchecked
       concurrent_fibers = Set(Fiber).new
+      _terminated = false
 
       options.scanner.subnets.each do |subnet|
         task_fiber = spawn do
@@ -46,17 +44,16 @@ class Cloudflare::Scanner
       end
 
       loop do
+        _terminated = @mutex.synchronize { terminated }
+        break @mutex.synchronize { @running = false } if _terminated
+
         all_dead = concurrent_mutex.synchronize { concurrent_fibers.all? { |fiber| fiber.dead? } }
         next sleep 0.25_f32.seconds unless all_dead
 
         break
       end
 
-      if terminated
-        @mutex.synchronize { @running = false }
-
-        break
-      end
+      break if _terminated
     end
   end
 end

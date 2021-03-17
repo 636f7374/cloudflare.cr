@@ -41,27 +41,30 @@ class Cloudflare::Radar
     list_mutex = Mutex.new :unchecked
     list = Set(IPAddress::IPv4 | IPAddress::IPv6).new
 
-    subnets.each do |ip_range|
-      sleep 0.02_f32.seconds
+    main_concurrent_fiber = spawn do
+      subnets.each do |ip_range|
+        task_fiber = spawn do
+          if (ip_range.prefix < 24_i32) && ip_range.is_a?(IPAddress::IPv4)
+            ip_range.each do |ip_address|
+              break unless ip_address.is_a? IPAddress::IPv4
+              next unless ip_address.octets.last.zero?
 
-      task_fiber = spawn do
-        if (ip_range.prefix < 24_i32) && ip_range.is_a?(IPAddress::IPv4)
-          ip_range.each do |ip_address|
-            break unless ip_address.is_a? IPAddress::IPv4
-            next unless ip_address.octets.last.zero?
+              prefix_24 = IPAddress.new String.build { |io| io << ip_address.address << "/24" }
+              list_mutex.synchronize { list << prefix_24 }
+            end
 
-            prefix_24 = IPAddress.new String.build { |io| io << ip_address.address << "/24" }
-            list_mutex.synchronize { list << prefix_24 }
+            next
           end
 
-          next
+          list << ip_range
         end
 
-        list << ip_range
+        concurrent_mutex.synchronize { concurrent_fibers << task_fiber }
+        sleep 0.01_f32.seconds
       end
-
-      concurrent_mutex.synchronize { concurrent_fibers << task_fiber }
     end
+
+    concurrent_mutex.synchronize { concurrent_fibers << main_concurrent_fiber }
 
     loop do
       all_dead = concurrent_mutex.synchronize { concurrent_fibers.all? { |fiber| fiber.dead? } }
@@ -86,41 +89,45 @@ class Cloudflare::Radar
     end
   end
 
-  private def process_task(subnets_iterator, mutex : Mutex, fibers : Array(Fiber)) : Bool
-    loop do
-      break if mutex.synchronize { fibers.size == options.radar.concurrentCount }
-      subnets_iterator_next = subnets_iterator.next
-      break if subnets_iterator_next.is_a? Iterator::Stop
-
-      task_fiber = spawn do
-        task = Task.new ipRange: subnets_iterator_next, storage: storage, options: options
-        task.perform
-      end
-
-      mutex.synchronize { fibers << task_fiber }
-    end
-
-    true
-  end
-
   private def concurrent_process_task(subnets : Set(IPAddress::IPv4 | IPAddress::IPv6))
     concurrent_mutex = Mutex.new :unchecked
     concurrent_fibers = Array(Fiber).new
-
     subnets_iterator = subnets.each
-    process_task subnets_iterator: subnets_iterator, mutex: concurrent_mutex, fibers: concurrent_fibers
+
+    main_concurrent_fiber = spawn do
+      loop do
+        if concurrent_mutex.synchronize { concurrent_fibers.size == options.radar.concurrentCount }
+          sleep 0.25_f32.seconds
+
+          next
+        end
+
+        subnets_iterator_next = subnets_iterator.next
+        break if subnets_iterator_next.is_a? Iterator::Stop
+
+        task_fiber = spawn do
+          task = Task.new ipRange: subnets_iterator_next, storage: storage, options: options
+          task.perform
+        end
+
+        concurrent_mutex.synchronize { concurrent_fibers << task_fiber }
+      end
+    end
+
+    concurrent_mutex.synchronize { concurrent_fibers << main_concurrent_fiber }
 
     loop do
       concurrent_mutex.synchronize do
         concurrent_fibers.each do |fiber|
           if fiber.dead?
             concurrent_fibers.delete fiber
+            next if numberOfTasks.get == numberOfTasksCompleted.get
+
             numberOfTasksCompleted.add 1_i32
           end
         end
       end
 
-      process_task subnets_iterator: subnets_iterator, mutex: concurrent_mutex, fibers: concurrent_fibers
       all_dead = concurrent_mutex.synchronize { concurrent_fibers.empty? }
       next sleep 0.25_f32.seconds unless all_dead
       storage.clear_if_only_needles options: options
