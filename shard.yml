@@ -8,4 +8,5 @@ dependencies:
 authors:
   - 636f7374
 
+crystal: 1.0.0
 license: GPLv3
