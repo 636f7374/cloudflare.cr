@@ -3,8 +3,8 @@ version: 1.0.0
 
 dependencies:
   ipaddress:
-    github: Sija/ipaddress.cr
-    version: ~> 0.21
+    github: 64726f70/ipaddress.cr
+    version: ~> 1.0.0
 
 authors:
   - 636f7374
