@@ -130,7 +130,7 @@ class Cloudflare::Radar
 
       all_dead = concurrent_mutex.synchronize { concurrent_fibers.empty? }
       next sleep 0.25_f32.seconds unless all_dead
-      storage.clear_if_only_needles options: options
+      storage.exclude options: options
 
       break
     end

@@ -46,7 +46,7 @@ maximumNumberOfFailuresPerSubnet: 15
 skipRange:
   - 3
   - 6
-clearIfOnlyNeedles:
+excludes:
   - - LosAngeles_UnitedStates
   - - SanJose_UnitedStates
   - - LosAngeles_UnitedStates

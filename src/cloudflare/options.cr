@@ -74,7 +74,7 @@ struct Cloudflare::Options
     property numberOfScansPerSubnet : Int32
     property maximumNumberOfFailuresPerSubnet : Int32
     property skipRange : Range(Int32, Int32)
-    property clearIfOnlyNeedles : Set(Set(Needles::Edge))
+    property excludes : Set(Set(Needles::Edge))
     property timeout : TimeOut
 
     def initialize
@@ -83,7 +83,7 @@ struct Cloudflare::Options
       @numberOfScansPerSubnet = 25_i32
       @maximumNumberOfFailuresPerSubnet = 15_i32
       @skipRange = (6_i32..12_i32)
-      @clearIfOnlyNeedles = Set(Set(Needles::Edge)).new
+      @excludes = Set(Set(Needles::Edge)).new
       @timeout = TimeOut.new
     end
   end

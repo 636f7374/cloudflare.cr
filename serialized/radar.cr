@@ -7,7 +7,7 @@ module Cloudflare::Serialized
     property numberOfScansPerSubnet : Int32
     property maximumNumberOfFailuresPerSubnet : Int32
     property skipRange : Array(Int32)
-    property clearIfOnlyNeedles : Array(Array(Needles::Edge))?
+    property excludes : Array(Array(Needles::Edge))?
     property timeout : TimeOut
     property outputPath : String?
 
@@ -17,7 +17,7 @@ module Cloudflare::Serialized
       @numberOfScansPerSubnet = 25_i32
       @maximumNumberOfFailuresPerSubnet = 15_i32
       @skipRange = [3_i32, 6_i32]
-      @clearIfOnlyNeedles = [[Needles::Edge::LosAngeles_UnitedStates], [Needles::Edge::SanJose_UnitedStates], [
+      @excludes = [[Needles::Edge::LosAngeles_UnitedStates], [Needles::Edge::SanJose_UnitedStates], [
         Needles::Edge::LosAngeles_UnitedStates, Needles::Edge::SanJose_UnitedStates,
       ]]
       @timeout = TimeOut.new
@@ -51,8 +51,8 @@ module Cloudflare::Serialized
       check_skip_range!
       radar.skipRange = (skipRange.first..skipRange.last)
 
-      if clear_if_only_needles = clearIfOnlyNeedles
-        radar.clearIfOnlyNeedles = clear_if_only_needles.map(&.to_set).to_set
+      if _excludes = excludes
+        radar.excludes = _excludes.map(&.to_set).to_set
       end
 
       options.radar = radar

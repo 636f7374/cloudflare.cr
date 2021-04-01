@@ -16,9 +16,9 @@ class Cloudflare::Radar
       @mutex.synchronize { entries.each { |ip_range, entry_set| yield ip_range, entry_set } }
     end
 
-    def clear_if_only_needles(options : Options)
+    def exclude(options : Options)
       @mutex.synchronize do
-        options.radar.clearIfOnlyNeedles.each do |needles|
+        options.radar.excludes.each do |needles|
           entries.each do |name, entry|
             case needles.size
             when .zero?
