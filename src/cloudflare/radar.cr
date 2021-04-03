@@ -1,25 +1,25 @@
 class Cloudflare::Radar
   getter storage : Storage
   getter options : Options
-  getter numberOfTasks : Atomic(Int64)
-  getter numberOfTasksCompleted : Atomic(Int64)
+  getter numberOfTasks : Atomic(UInt64)
+  getter numberOfTasksCompleted : Atomic(UInt64)
 
   def initialize(@storage : Storage = Storage.new, @options : Options = Options.new)
-    @numberOfTasks = Atomic.new 0_i64
-    @numberOfTasksCompleted = Atomic.new 0_i64
+    @numberOfTasks = Atomic.new 0_u64
+    @numberOfTasksCompleted = Atomic.new 0_u64
   end
 
-  def number_of_tasks : Int64
+  def number_of_tasks : UInt64
     numberOfTasks.get
   end
 
-  def number_of_tasks_completed : Int64
+  def number_of_tasks_completed : UInt64
     numberOfTasksCompleted.get
   end
 
   private def reset_tasks_number : Bool
-    numberOfTasks.set 0_i64
-    numberOfTasksCompleted.set 0_i64
+    numberOfTasks.set 0_u64
+    numberOfTasksCompleted.set 0_u64
 
     true
   end
@@ -28,8 +28,7 @@ class Cloudflare::Radar
     reset_tasks_number
 
     prefix24_set = to_prefix_24 subnets: get_subnets
-    numberOfTasks.set prefix24_set.size.to_i64
-
+    numberOfTasks.set prefix24_set.size.to_u64
     concurrent_process_task subnets: prefix24_set
 
     true
@@ -42,21 +41,17 @@ class Cloudflare::Radar
     list = Set(IPAddress::IPv4 | IPAddress::IPv6).new
 
     main_concurrent_fiber = spawn do
-      subnets.each do |ip_range|
+      subnets.each do |subnet|
         task_fiber = spawn do
-          if (ip_range.prefix < 24_i32) && ip_range.is_a?(IPAddress::IPv4)
-            ip_range.each do |ip_address|
-              break unless ip_address.is_a? IPAddress::IPv4
-              next unless ip_address.octets.last.zero?
-
-              prefix_24 = IPAddress.new String.build { |io| io << ip_address.address << "/24" }
-              list_mutex.synchronize { list << prefix_24 }
+          if (subnet.prefix < 24_i32) && subnet.is_a?(IPAddress::IPv4)
+            subnet.subnets(24_i32).each do |prefix_24_subnet|
+              list_mutex.synchronize { list << prefix_24_subnet }
             end
 
             next
           end
 
-          list << ip_range
+          list_mutex.synchronize { list << subnet }
         end
 
         concurrent_mutex.synchronize { concurrent_fibers << task_fiber }
