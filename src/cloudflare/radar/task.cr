@@ -1,10 +1,10 @@
 class Cloudflare::Radar
   struct Task
-    getter ipRange : IPAddress
+    getter subnet : IPAddress
     getter storage : Storage
     getter options : Options
 
-    def initialize(@ipRange : IPAddress, @storage : Storage, @options : Options)
+    def initialize(@subnet : IPAddress, @storage : Storage, @options : Options)
     end
 
     def perform(method : String = "HEAD", port : Int32 = 80_i32) : Bool
@@ -12,7 +12,7 @@ class Cloudflare::Radar
       skip_count = 0_i32
       each_times = 0_i32
 
-      ipRange.each do |ip_address|
+      subnet.each do |ip_address|
         break if failure_times == options.radar.maximumNumberOfFailuresPerSubnet
         break if each_times == options.radar.numberOfScansPerSubnet
         next skip_count -= 1_i32 unless skip_count.zero?
@@ -44,7 +44,7 @@ class Cloudflare::Radar
         next failure_times += 1_i32 unless edge = iata.to_edge?
 
         each_times += 1_i32
-        storage.set ip_range: ipRange, edge: edge
+        storage.set subnet: subnet, edge: edge
       end
 
       true

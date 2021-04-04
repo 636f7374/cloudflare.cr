@@ -3,19 +3,19 @@ module Cloudflare::Serialized
     include YAML::Serializable
 
     property subnets : Array(Entry)
-    property startingTime : String
-    property createdAt : String
+    property startingTime : Time
+    property createdAt : Time
 
-    def initialize(@subnets : Array(Entry) = [] of Entry, @startingTime : String = Time.local.to_s, @createdAt : String = Time.local.to_s)
+    def initialize(@subnets : Array(Entry) = [] of Entry, @startingTime : Time = Time.local, @createdAt : Time = Time.local)
     end
 
     struct Entry
       include YAML::Serializable
 
-      property ipRange : String
-      property list : Hash(String, Int64)
+      property subnet : String
+      property edges : Hash(String, Int64)
 
-      def initialize(@ipRange : String = String.new, @list : Hash(String, Int64) = Hash(String, Int64).new)
+      def initialize(@subnet : String = String.new, @edges : Hash(String, Int64) = Hash(String, Int64).new)
       end
     end
   end

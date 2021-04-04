@@ -34,27 +34,79 @@
 
 ### Radar
 
-* Radar Configuration File
+* Radar Configuration File (Standard Concurrent).
 
 ```yaml
 ---
 outputPath: $HOME/output.yml
-concurrentCount: 220
+concurrentCount: 230
 scanIpAddressType: ipv4_only
 numberOfScansPerSubnet: 50
 maximumNumberOfFailuresPerSubnet: 15
 skipRange:
-  - 3
-  - 6
+  - 2
+  - 4
 excludes:
   - - LosAngeles_UnitedStates
   - - SanJose_UnitedStates
   - - LosAngeles_UnitedStates
     - SanJose_UnitedStates
+timeout:
+  read: 2
+  write: 2
+  connect: 2
+```
+
+* Radar Configuration File (Concurrent + SubProcess Parallel).
+
+```yaml
+---
+outputPath: $HOME/output.yml
+concurrentCount: 230
+scanIpAddressType: ipv4_only
+numberOfScansPerSubnet: 50
+maximumNumberOfFailuresPerSubnet: 15
+skipRange:
+  - 2
+  - 4
+excludes:
   - - LosAngeles_UnitedStates
-    - Frankfurt_Germany
+  - - SanJose_UnitedStates
   - - LosAngeles_UnitedStates
-    - Munich_Germany
+    - SanJose_UnitedStates
+parallel:
+  executableName: radar
+  calleeCount: 4
+  listenAddress: tcp://0.0.0.0:4832
+  type: sub_process
+timeout:
+  read: 2
+  write: 2
+  connect: 2
+```
+
+* Radar Configuration File (Concurrent + Distributed Parallel).
+
+```yaml
+---
+outputPath: $HOME/output.yml
+concurrentCount: 230
+scanIpAddressType: ipv4_only
+numberOfScansPerSubnet: 50
+maximumNumberOfFailuresPerSubnet: 15
+skipRange:
+  - 2
+  - 4
+excludes:
+  - - LosAngeles_UnitedStates
+  - - SanJose_UnitedStates
+  - - LosAngeles_UnitedStates
+    - SanJose_UnitedStates
+parallel:
+  executableName: radar
+  calleeCount: 4
+  listenAddress: tcp://0.0.0.0:4832
+  type: distributed
 timeout:
   read: 2
   write: 2

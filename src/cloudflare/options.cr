@@ -86,5 +86,59 @@ struct Cloudflare::Options
       @excludes = Set(Set(Needles::Edge)).new
       @timeout = TimeOut.new
     end
+
+    def get_subnets : Set(IPAddress::IPv4 | IPAddress::IPv6)
+      case scanIpAddressType
+      in .ipv4_only?
+        Cloudflare::Subnet::Ipv4
+      in .ipv6_only?
+        Cloudflare::Subnet::Ipv6
+      in .both?
+        list = Set(Set(IPAddress::IPv4 | IPAddress::IPv6)).new
+        list << Cloudflare::Subnet::Ipv4
+        list << Cloudflare::Subnet::Ipv6
+
+        list.map(&.to_a).flatten.to_set
+      end
+    end
+
+    def get_prefix_24_subnets : Set(IPAddress::IPv4 | IPAddress::IPv6)
+      to_prefix_24 subnets: get_subnets
+    end
+
+    private def to_prefix_24(subnets : Set(IPAddress::IPv4 | IPAddress::IPv6)) : Set(IPAddress::IPv4 | IPAddress::IPv6)
+      concurrent_mutex = Mutex.new :unchecked
+      concurrent_fibers = Set(Fiber).new
+      list_mutex = Mutex.new :unchecked
+      list = Set(IPAddress::IPv4 | IPAddress::IPv6).new
+
+      main_concurrent_fiber = spawn do
+        subnets.each do |subnet|
+          task_fiber = spawn do
+            if (subnet.prefix < 24_i32) && subnet.is_a?(IPAddress::IPv4)
+              subnet.subnets(24_i32).each do |prefix_24_subnet|
+                list_mutex.synchronize { list << prefix_24_subnet }
+              end
+
+              next
+            end
+
+            list_mutex.synchronize { list << subnet }
+          end
+
+          concurrent_mutex.synchronize { concurrent_fibers << task_fiber }
+          sleep 0.01_f32.seconds
+        end
+      end
+
+      concurrent_mutex.synchronize { concurrent_fibers << main_concurrent_fiber }
+
+      loop do
+        all_dead = concurrent_mutex.synchronize { concurrent_fibers.all? { |fiber| fiber.dead? } }
+        next sleep 0.25_f32.seconds unless all_dead
+
+        break list
+      end
+    end
   end
 end

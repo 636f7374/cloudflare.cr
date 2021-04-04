@@ -1,12 +1,21 @@
 class Cloudflare::Radar
-  getter storage : Storage
   getter options : Options
+  getter storage : Storage
   getter numberOfTasks : Atomic(UInt64)
   getter numberOfTasksCompleted : Atomic(UInt64)
 
-  def initialize(@storage : Storage = Storage.new, @options : Options = Options.new)
+  def initialize(@options : Options = Options.new)
+    @storage = Storage.new
     @numberOfTasks = Atomic.new 0_u64
     @numberOfTasksCompleted = Atomic.new 0_u64
+  end
+
+  def options
+    @options
+  end
+
+  def storage : Storage
+    @storage
   end
 
   def number_of_tasks : UInt64
@@ -24,64 +33,13 @@ class Cloudflare::Radar
     true
   end
 
-  def perform : Bool
+  def perform(subnets : Set(IPAddress::IPv4 | IPAddress::IPv6)) : Bool
     reset_tasks_number
 
-    prefix24_set = to_prefix_24 subnets: get_subnets
-    numberOfTasks.set prefix24_set.size.to_u64
-    concurrent_process_task subnets: prefix24_set
+    numberOfTasks.set subnets.size.to_u64
+    concurrent_process_task subnets: subnets
 
     true
-  end
-
-  private def to_prefix_24(subnets : Set(IPAddress::IPv4 | IPAddress::IPv6)) : Set(IPAddress::IPv4 | IPAddress::IPv6)
-    concurrent_mutex = Mutex.new :unchecked
-    concurrent_fibers = Set(Fiber).new
-    list_mutex = Mutex.new :unchecked
-    list = Set(IPAddress::IPv4 | IPAddress::IPv6).new
-
-    main_concurrent_fiber = spawn do
-      subnets.each do |subnet|
-        task_fiber = spawn do
-          if (subnet.prefix < 24_i32) && subnet.is_a?(IPAddress::IPv4)
-            subnet.subnets(24_i32).each do |prefix_24_subnet|
-              list_mutex.synchronize { list << prefix_24_subnet }
-            end
-
-            next
-          end
-
-          list_mutex.synchronize { list << subnet }
-        end
-
-        concurrent_mutex.synchronize { concurrent_fibers << task_fiber }
-        sleep 0.01_f32.seconds
-      end
-    end
-
-    concurrent_mutex.synchronize { concurrent_fibers << main_concurrent_fiber }
-
-    loop do
-      all_dead = concurrent_mutex.synchronize { concurrent_fibers.all? { |fiber| fiber.dead? } }
-      next sleep 0.25_f32.seconds unless all_dead
-
-      break list
-    end
-  end
-
-  private def get_subnets : Set(IPAddress::IPv4 | IPAddress::IPv6)
-    case options.radar.scanIpAddressType
-    in .ipv4_only?
-      Subnet::Ipv4
-    in .ipv6_only?
-      Subnet::Ipv6
-    in .both?
-      list = Set(Set(IPAddress::IPv4 | IPAddress::IPv6)).new
-      list << Subnet::Ipv4
-      list << Subnet::Ipv6
-
-      list.map(&.to_a).flatten.to_set
-    end
   end
 
   private def concurrent_process_task(subnets : Set(IPAddress::IPv4 | IPAddress::IPv6))
@@ -101,7 +59,7 @@ class Cloudflare::Radar
         break if subnets_iterator_next.is_a? Iterator::Stop
 
         task_fiber = spawn do
-          task = Task.new ipRange: subnets_iterator_next, storage: storage, options: options
+          task = Task.new subnet: subnets_iterator_next, storage: storage, options: options
           task.perform
         end
 

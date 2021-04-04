@@ -13,7 +13,7 @@ class Cloudflare::Radar
     end
 
     def each(&block : String, Entry ->)
-      @mutex.synchronize { entries.each { |ip_range, entry_set| yield ip_range, entry_set } }
+      @mutex.synchronize { entries.each { |subnet, edges| yield subnet, edges } }
     end
 
     def exclude(options : Options)
@@ -24,13 +24,13 @@ class Cloudflare::Radar
             when .zero?
             when 1_i32
               needles_all = needles.map do |needle|
-                entry.list.all? { |tuple| needle == tuple.first }
+                entry.edges.all? { |tuple| needle == tuple.first }
               end
 
               entries.delete name if needles_all.all?
             else
-              equal_size = needles.size == entry.list.size
-              includes_map = needles.map { |needle| entry.list[needle]? }
+              equal_size = needles.size == entry.edges.size
+              includes_map = needles.map { |needle| entry.edges[needle]? }
               entries.delete name if equal_size && includes_map.all?
             end
           end
@@ -38,23 +38,23 @@ class Cloudflare::Radar
       end
     end
 
-    def set(ip_range : IPAddress, edge : Needles::Edge) : Bool
+    def set(subnet : IPAddress, edge : Needles::Edge) : Bool
       @mutex.synchronize do
-        string_ip_range = String.build { |io| io << ip_range.address << "/" << ip_range.prefix }
-        entry = entries[string_ip_range] ||= Entry.new
-        visits = entry.list[edge] ||= 0_i64
-        entry.list[edge] = visits += 1_i32
-        entries[string_ip_range] = entry
+        text_subnet = String.build { |io| io << subnet.address << "/" << subnet.prefix }
+        entry = entries[text_subnet] ||= Entry.new
+        visits = entry.edges[edge] ||= 0_i64
+        entry.edges[edge] = visits += 1_i32
+        entries[text_subnet] = entry
       end
 
       true
     end
 
     struct Entry
-      property list : Hash(Needles::Edge, Int64)
+      property edges : Hash(Needles::Edge, Int64)
 
       def initialize
-        @list = Hash(Needles::Edge, Int64).new
+        @edges = Hash(Needles::Edge, Int64).new
       end
     end
   end
