@@ -133,6 +133,7 @@ excludes:
 parallel:
   executableName: radar
   calleeCount: 4
+  subProcessCalleeCount: 2
   listenAddress: tcp://0.0.0.0:4832
   type: hybrid
 timeout:

@@ -79,10 +79,11 @@ module Cloudflare::Serialized
 
         property executableName : String
         property calleeCount : Int32
+        property subProcessCalleeCount : Int32?
         property listenAddress : String
         property type : ParallelFlag
 
-        def initialize(@executableName : String, @calleeCount : Int32, @listenAddress : String, @type : ParallelFlag)
+        def initialize(@executableName : String, @calleeCount : Int32, @subProcessCalleeCount : Int32?, @listenAddress : String, @type : ParallelFlag)
         end
 
         def get_listen_address! : Socket::Address

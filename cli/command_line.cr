@@ -66,15 +66,21 @@ module Cloudflare::CommandLine
       external_controller.perform
     end
 
-    if parallel.type.sub_process? || parallel.type.hybrid?
-      sub_process_count = parallel.type.sub_process? ? serialized_callees.size : (serialized_callees.size / 2_i32).to_i
-      sub_process_count = 1_i32 if sub_process_count <= 0_i32
+    case parallel.type
+    in .sub_process?
+      sub_process_count = serialized_callees.size
+    in .hybrid?
+      sub_process_count = parallel.subProcessCalleeCount || 0_i32
+      sub_process_count = 0_i32 if 0_i32 > sub_process_count
+      sub_process_count = serialized_callees.size if sub_process_count > serialized_callees.size
+    in .distributed?
+      sub_process_count = 0_i32
+    end
 
-      sub_process_count.times do
-        spawn do
-          process = Process.new command: parallel.executableName, args: ["-e", parallel.listenAddress], shell: true
-          process.wait
-        end
+    sub_process_count.times do
+      spawn do
+        process = Process.new command: parallel.executableName, args: ["-e", parallel.listenAddress], shell: true
+        process.wait
       end
     end
 
