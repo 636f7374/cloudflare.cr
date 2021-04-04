@@ -6,6 +6,7 @@ module Cloudflare::Serialized
       enum ParallelFlag : UInt8
         Distributed = 0_u8
         SubProcess  = 1_u8
+        Hybrid      = 2_u8
       end
 
       property parallel : Parallel?

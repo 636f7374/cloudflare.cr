@@ -11,12 +11,7 @@ module Cloudflare::CommandLine
   private def self.process_standard(option_parser : OptionParser, serialized_redar : Serialized::Radar::Standard)
     case parallel = serialized_redar.parallel
     in Serialized::Radar::Standard::Parallel
-      case parallel.type
-      in .distributed?
-        process_standard_parallel_distributed serialized_redar: serialized_redar, parallel: parallel
-      in .sub_process?
-        process_standard_parallel_sub_process serialized_redar: serialized_redar, parallel: parallel
-      end
+      process_parallel serialized_redar: serialized_redar, parallel: parallel
     in Nil
       process_standard serialized_redar: serialized_redar
     end
@@ -45,7 +40,7 @@ module Cloudflare::CommandLine
     end
   end
 
-  private def self.process_standard_parallel_sub_process(serialized_redar : Serialized::Radar::Standard, parallel : Serialized::Radar::Standard::Parallel)
+  private def self.process_parallel(serialized_redar : Serialized::Radar::Standard, parallel : Serialized::Radar::Standard::Parallel)
     starting_time = Time.local
     output_path = serialized_redar.get_output_path!
     radar = serialized_redar.unwrap
@@ -71,10 +66,15 @@ module Cloudflare::CommandLine
       external_controller.perform
     end
 
-    serialized_callees.size.times do
-      spawn do
-        process = Process.new command: parallel.executableName, args: ["-e", parallel.listenAddress], shell: true
-        process.wait
+    if parallel.type.sub_process? || parallel.type.hybrid?
+      sub_process_count = parallel.type.sub_process? ? serialized_callees.size : (serialized_callees.size / 2_i32).to_i
+      sub_process_count = 1_i32 if sub_process_count <= 0_i32
+
+      sub_process_count.times do
+        spawn do
+          process = Process.new command: parallel.executableName, args: ["-e", parallel.listenAddress], shell: true
+          process.wait
+        end
       end
     end
 
@@ -82,54 +82,7 @@ module Cloudflare::CommandLine
       if external_controller.done?
         external_controller.close rescue nil
 
-        export = Cloudflare::Serialized::Export.new
-        export.startingTime = starting_time
-        export.createdAt = Time.local
-        external_controller.get_exports.each &.subnets.each { |subnet| export.subnets << subnet }
-        write_serialized_export_to_file export: export, output_path: output_path
-
-        break
-      end
-
-      sleep 0.25_f32.seconds
-    end
-  end
-
-  private def self.process_standard_parallel_distributed(serialized_redar : Serialized::Radar::Standard, parallel : Serialized::Radar::Standard::Parallel)
-    starting_time = Time.local
-    output_path = serialized_redar.get_output_path!
-    radar = serialized_redar.unwrap
-
-    prefix_24_subnets = radar.options.radar.get_prefix_24_subnets
-    serialized_callees = split_parallel_serialized_callee_set serialized_redar: serialized_redar, parallel: parallel, subnets: prefix_24_subnets
-
-    exports = [] of Cloudflare::Serialized::Export
-    exports_mutex = Mutex.new :unchecked
-
-    case listen_address = parallel.get_listen_address!
-    in Socket::IPAddress
-      caller = TCPServer.new host: listen_address.address, port: listen_address.port, reuse_port: true
-    in Socket::UNIXAddress
-      caller = UNIXServer.new path: listen_address.path
-    in Socket::Address
-      abort "CommandLine.process_standard_parallel_distributed: Unknown Parallel.listenAddress type (not IPAddress or UNIXAddress)."
-    end
-
-    external_controller = ExternalController.new io: caller, calleeSet: serialized_callees
-
-    spawn do
-      external_controller.perform
-    end
-
-    loop do
-      if external_controller.done?
-        external_controller.close rescue nil
-
-        export = Cloudflare::Serialized::Export.new
-        export.startingTime = starting_time
-        export.createdAt = Time.local
-        external_controller.get_exports.each &.subnets.each { |subnet| export.subnets << subnet }
-        write_serialized_export_to_file export: export, output_path: output_path
+        write_serialized_export_to_file exports: external_controller.get_exports, output_path: output_path
 
         break
       end
@@ -211,6 +164,13 @@ module Cloudflare::CommandLine
   private def self.write_serialized_export_to_file(export : Serialized::Export, output_path : String)
     output = File.open filename: output_path, mode: "wb"
     output.write export.to_yaml.to_slice
+
+    output.close
+  end
+
+  private def self.write_serialized_export_to_file(exports : Set(Serialized::Export), output_path : String)
+    output = File.open filename: output_path, mode: "wb"
+    output.write exports.to_yaml.to_slice
 
     output.close
   end

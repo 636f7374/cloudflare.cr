@@ -113,6 +113,34 @@ timeout:
   connect: 2
 ```
 
+* Radar Configuration File (Concurrent + Hybrid (SubProcess & Distributed) Parallel).
+
+```yaml
+---
+outputPath: $HOME/output.yml
+concurrentCount: 230
+scanIpAddressType: ipv4_only
+numberOfScansPerSubnet: 50
+maximumNumberOfFailuresPerSubnet: 15
+skipRange:
+  - 2
+  - 4
+excludes:
+  - - LosAngeles_UnitedStates
+  - - SanJose_UnitedStates
+  - - LosAngeles_UnitedStates
+    - SanJose_UnitedStates
+parallel:
+  executableName: radar
+  calleeCount: 4
+  listenAddress: tcp://0.0.0.0:4832
+  type: hybrid
+timeout:
+  read: 2
+  write: 2
+  connect: 2
+```
+
 ### Used as Shard
 
 Add this to your application's shard.yml:
