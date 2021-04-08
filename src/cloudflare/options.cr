@@ -99,7 +99,7 @@ struct Cloudflare::Options
         blocks.each do |block|
           task_fiber = spawn do
             if (block.prefix < 24_i32) && block.is_a?(IPAddress::IPv4)
-              block.blocks(24_i32).each do |prefix_24_block|
+              block.subnets(24_i32).each do |prefix_24_block|
                 list_mutex.synchronize { list << prefix_24_block }
               end
 

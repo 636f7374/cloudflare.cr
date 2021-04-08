@@ -13,7 +13,7 @@ class Cloudflare::Radar
     end
 
     def each(&block : String, Entry ->)
-      @mutex.synchronize { entries.each { |block, edges| yield block, edges } }
+      @mutex.synchronize { entries.each { |_block, edges| yield _block, edges } }
     end
 
     def exclude(options : Options)
