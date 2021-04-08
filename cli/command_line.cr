@@ -22,7 +22,7 @@ module Cloudflare::CommandLine
     output_path = serialized_redar.get_output_path!
     radar = serialized_redar.unwrap
 
-    rader_fiber = spawn { radar.perform subnets: radar.options.radar.get_prefix_24_subnets }
+    rader_fiber = spawn { radar.perform blocks: radar.options.radar.get_prefix_24_blocks }
 
     loop do
       rader_fiber_dead = rader_fiber.dead?
@@ -45,8 +45,8 @@ module Cloudflare::CommandLine
     output_path = serialized_redar.get_output_path!
     radar = serialized_redar.unwrap
 
-    prefix_24_subnets = radar.options.radar.get_prefix_24_subnets
-    serialized_callees = split_parallel_serialized_callee_set serialized_redar: serialized_redar, parallel: parallel, subnets: prefix_24_subnets
+    prefix_24_blocks = radar.options.radar.get_prefix_24_blocks
+    serialized_callees = split_parallel_serialized_callee_set serialized_redar: serialized_redar, parallel: parallel, blocks: prefix_24_blocks
 
     exports = [] of Cloudflare::Serialized::Export
     exports_mutex = Mutex.new :unchecked
@@ -102,10 +102,10 @@ module Cloudflare::CommandLine
     abort "CommandLine.process_callee: (Error: CommandLine::OptionParser.externalController is Nil!)" unless external_controller
 
     starting_time = Time.local
-    subnets = serialized_redar.subnets.map { |text_subnet| IPAddress.new addr: text_subnet }
+    blocks = serialized_redar.blocks.map { |text_block| IPAddress.new addr: text_block }
     radar = serialized_redar.unwrap
 
-    rader_fiber = spawn { radar.perform subnets: subnets.to_set }
+    rader_fiber = spawn { radar.perform blocks: blocks.to_set }
 
     loop do
       rader_fiber_dead = rader_fiber.dead?
@@ -150,12 +150,12 @@ module Cloudflare::CommandLine
     serialized_export = Serialized::Export.new
     serialized_export.startingTime = starting_time
 
-    radar.storage.each do |subnet, entry|
+    radar.storage.each do |block, entry|
       serialized_export_entry = Serialized::Export::Entry.new
-      serialized_export_entry.subnet = subnet
+      serialized_export_entry.block = block
       entry.edges.each { |name, count| serialized_export_entry.edges[name.to_s] = count }
 
-      serialized_export.subnets << serialized_export_entry
+      serialized_export.blocks << serialized_export_entry
     end
 
     serialized_export.createdAt = Time.local
@@ -181,23 +181,23 @@ module Cloudflare::CommandLine
     output.close
   end
 
-  private def self.split_parallel_serialized_callee_set(serialized_redar : Serialized::Radar::Standard, parallel : Serialized::Radar::Standard::Parallel, subnets : Set(IPAddress::IPv4 | IPAddress::IPv6)) : Set(Serialized::Radar::Callee)
+  private def self.split_parallel_serialized_callee_set(serialized_redar : Serialized::Radar::Standard, parallel : Serialized::Radar::Standard::Parallel, blocks : Set(IPAddress::IPv4 | IPAddress::IPv6)) : Set(Serialized::Radar::Callee)
     serialized_callees = Set(Serialized::Radar::Callee).new
 
-    per_callee_subnets_count = (subnets.size / parallel.calleeCount).to_i32
-    per_callee_subnets_count += 1_i32
+    per_callee_blocks_count = (blocks.size / parallel.calleeCount).to_i32
+    per_callee_blocks_count += 1_i32
 
-    subnets.each_slice per_callee_subnets_count do |subnets|
-      next if subnets.empty?
+    blocks.each_slice per_callee_blocks_count do |blocks|
+      next if blocks.empty?
       serialized_callee = Serialized::Radar::Callee.new
 
       serialized_callee.concurrentCount = serialized_redar.concurrentCount
-      serialized_callee.numberOfScansPerSubnet = serialized_redar.numberOfScansPerSubnet
-      serialized_callee.maximumNumberOfFailuresPerSubnet = serialized_redar.maximumNumberOfFailuresPerSubnet
+      serialized_callee.numberOfScansPerBlock = serialized_redar.numberOfScansPerBlock
+      serialized_callee.maximumNumberOfFailuresPerBlock = serialized_redar.maximumNumberOfFailuresPerBlock
       serialized_callee.skipRange = serialized_redar.skipRange
       serialized_callee.excludes = serialized_redar.excludes
       serialized_callee.timeout = serialized_redar.timeout.to_callee_timeout
-      serialized_callee.subnets = subnets.map { |subnet| String.build { |io| io << subnet.address << '/' << subnet.prefix } }
+      serialized_callee.blocks = blocks.map { |block| String.build { |io| io << block.address << '/' << block.prefix } }
 
       serialized_callees << serialized_callee
     end

@@ -41,8 +41,8 @@
 outputPath: $HOME/output.yml
 concurrentCount: 230
 scanIpAddressType: ipv4_only
-numberOfScansPerSubnet: 50
-maximumNumberOfFailuresPerSubnet: 15
+numberOfScansPerBlock: 50
+maximumNumberOfFailuresPerBlock: 15
 skipRange:
   - 2
   - 4
@@ -64,8 +64,8 @@ timeout:
 outputPath: $HOME/output.yml
 concurrentCount: 230
 scanIpAddressType: ipv4_only
-numberOfScansPerSubnet: 50
-maximumNumberOfFailuresPerSubnet: 15
+numberOfScansPerBlock: 50
+maximumNumberOfFailuresPerBlock: 15
 skipRange:
   - 2
   - 4
@@ -92,8 +92,8 @@ timeout:
 outputPath: $HOME/output.yml
 concurrentCount: 230
 scanIpAddressType: ipv4_only
-numberOfScansPerSubnet: 50
-maximumNumberOfFailuresPerSubnet: 15
+numberOfScansPerBlock: 50
+maximumNumberOfFailuresPerBlock: 15
 skipRange:
   - 2
   - 4
@@ -120,8 +120,8 @@ timeout:
 outputPath: $HOME/output.yml
 concurrentCount: 230
 scanIpAddressType: ipv4_only
-numberOfScansPerSubnet: 50
-maximumNumberOfFailuresPerSubnet: 15
+numberOfScansPerBlock: 50
+maximumNumberOfFailuresPerBlock: 15
 skipRange:
   - 2
   - 4

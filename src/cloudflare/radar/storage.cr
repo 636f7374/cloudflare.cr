@@ -13,7 +13,7 @@ class Cloudflare::Radar
     end
 
     def each(&block : String, Entry ->)
-      @mutex.synchronize { entries.each { |subnet, edges| yield subnet, edges } }
+      @mutex.synchronize { entries.each { |block, edges| yield block, edges } }
     end
 
     def exclude(options : Options)
@@ -38,13 +38,13 @@ class Cloudflare::Radar
       end
     end
 
-    def set(subnet : IPAddress, edge : Needles::Edge) : Bool
+    def set(block : IPAddress, edge : Needles::Edge) : Bool
       @mutex.synchronize do
-        text_subnet = String.build { |io| io << subnet.address << "/" << subnet.prefix }
-        entry = entries[text_subnet] ||= Entry.new
+        text_block = String.build { |io| io << block.address << "/" << block.prefix }
+        entry = entries[text_block] ||= Entry.new
         visits = entry.edges[edge] ||= 0_i64
         entry.edges[edge] = visits += 1_i32
-        entries[text_subnet] = entry
+        entries[text_block] = entry
       end
 
       true

@@ -3,7 +3,7 @@ require "../serialized/serialized.cr"
 require "../serialized/*"
 
 text = %(---
-subnets:
+blocks:
   - ipRange: 103.21.244.0/24
     expects:
       - name: bom
@@ -21,11 +21,11 @@ subnets:
         priority: 1
         type: iata
 caching:
-  ipAddressCapacityPerSubnet: 4
+  ipAddressCapacityPerBlock: 4
   clearInterval: 30
 quirks:
-  numberOfScansPerSubnet: 50
-  maximumNumberOfFailuresPerSubnet: 25
+  numberOfScansPerBlock: 50
+  maximumNumberOfFailuresPerBlock: 25
   sleep: 1
   skipRange:
     - 1

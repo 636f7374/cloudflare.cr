@@ -12,8 +12,8 @@ module Cloudflare::Serialized
       property parallel : Parallel?
       property concurrentCount : Int32
       property scanIpAddressType : Cloudflare::Options::Radar::ScanIpAddressType
-      property numberOfScansPerSubnet : Int32
-      property maximumNumberOfFailuresPerSubnet : Int32
+      property numberOfScansPerBlock : Int32
+      property maximumNumberOfFailuresPerBlock : Int32
       property skipRange : Array(Int32)
       property excludes : Array(Array(Needles::Edge))?
       property timeout : TimeOut
@@ -23,8 +23,8 @@ module Cloudflare::Serialized
         @parallel = nil
         @concurrentCount = 220_i32
         @scanIpAddressType = Cloudflare::Options::Radar::ScanIpAddressType::Ipv4Only
-        @numberOfScansPerSubnet = 25_i32
-        @maximumNumberOfFailuresPerSubnet = 15_i32
+        @numberOfScansPerBlock = 25_i32
+        @maximumNumberOfFailuresPerBlock = 15_i32
         @skipRange = [3_i32, 6_i32]
         @excludes = [[Needles::Edge::LosAngeles_UnitedStates], [Needles::Edge::SanJose_UnitedStates], [
           Needles::Edge::LosAngeles_UnitedStates, Needles::Edge::SanJose_UnitedStates,
@@ -58,8 +58,8 @@ module Cloudflare::Serialized
 
         radar.concurrentCount = concurrentCount
         radar.scanIpAddressType = scanIpAddressType
-        radar.numberOfScansPerSubnet = numberOfScansPerSubnet
-        radar.maximumNumberOfFailuresPerSubnet = maximumNumberOfFailuresPerSubnet
+        radar.numberOfScansPerBlock = numberOfScansPerBlock
+        radar.maximumNumberOfFailuresPerBlock = maximumNumberOfFailuresPerBlock
         radar.timeout = timeout.unwrap
 
         check_skip_range!

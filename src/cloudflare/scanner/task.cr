@@ -1,10 +1,10 @@
 class Cloudflare::Scanner
   struct Task
-    getter subnet : Options::Scanner::Subnet
+    getter block : Block
     getter caching : Caching::Scanner
     getter options : Options
 
-    def initialize(@subnet : Options::Scanner::Subnet, @caching : Caching::Scanner, @options : Options)
+    def initialize(@block : Block, @caching : Caching::Scanner, @options : Options)
     end
 
     def perform(method : String = "HEAD", port : Int32 = 80_i32) : Bool
@@ -12,9 +12,9 @@ class Cloudflare::Scanner
       skip_count = 0_i32
       each_times = 0_i32
 
-      subnet.ipRange.each do |ip_address|
-        break if failure_times == options.scanner.quirks.maximumNumberOfFailuresPerSubnet
-        break if each_times == options.scanner.quirks.numberOfScansPerSubnet
+      block.ipRange.each do |ip_address|
+        break if failure_times == options.scanner.quirks.maximumNumberOfFailuresPerBlock
+        break if each_times == options.scanner.quirks.numberOfScansPerBlock
         next skip_count -= 1_i32 unless skip_count.zero?
         skip_count = options.scanner.quirks.skipRange.sample
         _ip_address = Socket::IPAddress.new address: ip_address.address, port: port
@@ -41,10 +41,10 @@ class Cloudflare::Scanner
         next failure_times += 1_i32 unless value = http_response.headers["CF-RAY"]?
         ray_id, delimiter, text_iata = value.rpartition "-"
         next failure_times += 1_i32 unless iata = Needles::IATA.parse? text_iata
-        next unless expect = subnet.expects.find { |expect| iata == expect.iata }
+        next unless expect = block.expects.find { |expect| iata == expect.iata }
 
         each_times += 1_i32
-        caching.set ip_range: subnet.ipRange, iata: iata, priority: expect.priority,
+        caching.set ip_range: block.ipRange, iata: iata, priority: expect.priority,
           ip_address: Socket::IPAddress.new(address: ip_address.address, port: 0_i32)
 
         sleep options.scanner.quirks.sleep

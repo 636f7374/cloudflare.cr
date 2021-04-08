@@ -1,19 +1,20 @@
 class Cloudflare::Scanner
+  getter blocks : Array(Task::Block)
   getter options : Options
   getter caching : Caching::Scanner
   getter terminated : Bool
   getter running : Bool
   getter mutex : Mutex
 
-  def initialize(@options : Options, @caching : Caching::Scanner)
+  def initialize(@blocks : Array(Task::Block), @options : Options, @caching : Caching::Scanner)
     @terminated = false
     @running = false
     @mutex = Mutex.new :unchecked
   end
 
-  def self.new(options : Options)
+  def self.new(blocks : Array(Task::Block), options : Options)
     caching = Cloudflare::Caching::Scanner.new options: options
-    new options: options, caching: caching
+    new blocks: blocks, options: options, caching: caching
   end
 
   def caching_to_tuple_ip_addresses : Array(Tuple(Needles::IATA, Socket::IPAddress))
@@ -34,9 +35,9 @@ class Cloudflare::Scanner
       concurrent_fibers = Set(Fiber).new
       _terminated = false
 
-      options.scanner.subnets.each do |subnet|
+      blocks.each do |block|
         task_fiber = spawn do
-          task = Task.new subnet: subnet, caching: caching, options: options
+          task = Task.new block: block, caching: caching, options: options
           task.perform
         end
 
@@ -60,3 +61,4 @@ end
 
 require "./caching/*"
 require "./scanner/*"
+require "./scanner/task/*"

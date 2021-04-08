@@ -20,9 +20,9 @@ class DNS::Resolver
       consistent_port = ip_addresses.all? { |ip_address| port == ip_address.port }
 
       if consistent_port && allowed_fetch_type
-        subnet_includes = Cloudflare::Subnet.includes? ip_addresses.first unless ip_addresses.empty?
+        block_includes = Cloudflare::Block.includes? ip_addresses.first unless ip_addresses.empty?
 
-        if subnet_includes
+        if block_includes
           cloudflare_ip_addresses = _cloudflare.caching_to_tuple_ip_addresses.map do |address_tuple|
             Socket::IPAddress.new address: address_tuple.last.address, port: port
           end

@@ -1,4 +1,4 @@
-module Cloudflare::Subnet
+module Cloudflare::Block
   # Ipv4: AS13335, AS209242, AS132892, AS139242, AS202623, AS395747, AS203898
   # |_Empty: AS14789, AS133877
   # Ipv6: AS13335, AS209242, AS132892, AS139242, AS394536, AS202623, AS395747, AS203898
@@ -233,10 +233,10 @@ module Cloudflare::Subnet
   def self.includes?(ip_address : Socket::IPAddress) : Bool
     _ip_address = IPAddress.new addr: ip_address.address
 
-    Ipv4.each { |subnet| return true if subnet.includes? _ip_address }
+    Ipv4.each { |block| return true if block.includes? _ip_address }
     return false if ip_address.family.inet?
 
-    Ipv6.each { |subnet| return true if subnet.includes? _ip_address }
+    Ipv6.each { |block| return true if block.includes? _ip_address }
     return false if ip_address.family.inet6?
 
     false

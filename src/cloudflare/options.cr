@@ -17,47 +17,30 @@ struct Cloudflare::Options
   end
 
   struct Scanner
-    property subnets : Array(Subnet)
     property caching : Caching
     property quirks : Quirks
     property timeout : TimeOut
 
-    def initialize(@subnets : Array(Subnet) = [] of Subnet, @caching : Caching = Caching.new, @quirks : Quirks = Quirks.new, @timeout : TimeOut = TimeOut.new)
-    end
-
-    struct Subnet
-      property ipRange : IPAddress
-      property expects : Array(Expect)
-
-      def initialize(@ipRange : IPAddress, @expects : Array(Expect) = [] of Expect)
-      end
-
-      struct Expect
-        property iata : Needles::IATA
-        property priority : UInt8
-
-        def initialize(@iata : Needles::IATA, @priority : UInt8 = 0_u8)
-        end
-      end
+    def initialize(@caching : Caching = Caching.new, @quirks : Quirks = Quirks.new, @timeout : TimeOut = TimeOut.new)
     end
 
     struct Caching
-      property ipAddressCapacityPerSubnet : UInt8
+      property ipAddressCapacityPerBlock : UInt8
       property clearInterval : Time::Span
 
       def initialize
-        @ipAddressCapacityPerSubnet = 3_u8
+        @ipAddressCapacityPerBlock = 3_u8
         @clearInterval = 30_u8.seconds
       end
     end
 
     struct Quirks
-      property numberOfScansPerSubnet : Int32
-      property maximumNumberOfFailuresPerSubnet : Int32
+      property numberOfScansPerBlock : Int32
+      property maximumNumberOfFailuresPerBlock : Int32
       property skipRange : Range(Int32, Int32)
       property sleep : Time::Span
 
-      def initialize(@numberOfScansPerSubnet : Int32 = 25_i32, @maximumNumberOfFailuresPerSubnet : Int32 = 15_i32, @skipRange : Range(Int32, Int32) = (6_i32..12_i32), @sleep : Time::Span = 1_u8.seconds)
+      def initialize(@numberOfScansPerBlock : Int32 = 25_i32, @maximumNumberOfFailuresPerBlock : Int32 = 15_i32, @skipRange : Range(Int32, Int32) = (6_i32..12_i32), @sleep : Time::Span = 1_u8.seconds)
       end
     end
   end
@@ -71,8 +54,8 @@ struct Cloudflare::Options
 
     property concurrentCount : Int32
     property scanIpAddressType : ScanIpAddressType
-    property numberOfScansPerSubnet : Int32
-    property maximumNumberOfFailuresPerSubnet : Int32
+    property numberOfScansPerBlock : Int32
+    property maximumNumberOfFailuresPerBlock : Int32
     property skipRange : Range(Int32, Int32)
     property excludes : Set(Set(Needles::Edge))
     property timeout : TimeOut
@@ -80,50 +63,50 @@ struct Cloudflare::Options
     def initialize
       @concurrentCount = 220_i32
       @scanIpAddressType = ScanIpAddressType::Ipv4Only
-      @numberOfScansPerSubnet = 25_i32
-      @maximumNumberOfFailuresPerSubnet = 15_i32
+      @numberOfScansPerBlock = 25_i32
+      @maximumNumberOfFailuresPerBlock = 15_i32
       @skipRange = (6_i32..12_i32)
       @excludes = Set(Set(Needles::Edge)).new
       @timeout = TimeOut.new
     end
 
-    def get_subnets : Set(IPAddress::IPv4 | IPAddress::IPv6)
+    def get_blocks : Set(IPAddress::IPv4 | IPAddress::IPv6)
       case scanIpAddressType
       in .ipv4_only?
-        Cloudflare::Subnet::Ipv4
+        Cloudflare::Block::Ipv4
       in .ipv6_only?
-        Cloudflare::Subnet::Ipv6
+        Cloudflare::Block::Ipv6
       in .both?
         list = Set(Set(IPAddress::IPv4 | IPAddress::IPv6)).new
-        list << Cloudflare::Subnet::Ipv4
-        list << Cloudflare::Subnet::Ipv6
+        list << Cloudflare::Block::Ipv4
+        list << Cloudflare::Block::Ipv6
 
         list.map(&.to_a).flatten.to_set
       end
     end
 
-    def get_prefix_24_subnets : Set(IPAddress::IPv4 | IPAddress::IPv6)
-      to_prefix_24 subnets: get_subnets
+    def get_prefix_24_blocks : Set(IPAddress::IPv4 | IPAddress::IPv6)
+      to_prefix_24 blocks: get_blocks
     end
 
-    private def to_prefix_24(subnets : Set(IPAddress::IPv4 | IPAddress::IPv6)) : Set(IPAddress::IPv4 | IPAddress::IPv6)
+    private def to_prefix_24(blocks : Set(IPAddress::IPv4 | IPAddress::IPv6)) : Set(IPAddress::IPv4 | IPAddress::IPv6)
       concurrent_mutex = Mutex.new :unchecked
       concurrent_fibers = Set(Fiber).new
       list_mutex = Mutex.new :unchecked
       list = Set(IPAddress::IPv4 | IPAddress::IPv6).new
 
       main_concurrent_fiber = spawn do
-        subnets.each do |subnet|
+        blocks.each do |block|
           task_fiber = spawn do
-            if (subnet.prefix < 24_i32) && subnet.is_a?(IPAddress::IPv4)
-              subnet.subnets(24_i32).each do |prefix_24_subnet|
-                list_mutex.synchronize { list << prefix_24_subnet }
+            if (block.prefix < 24_i32) && block.is_a?(IPAddress::IPv4)
+              block.blocks(24_i32).each do |prefix_24_block|
+                list_mutex.synchronize { list << prefix_24_block }
               end
 
               next
             end
 
-            list_mutex.synchronize { list << subnet }
+            list_mutex.synchronize { list << block }
           end
 
           concurrent_mutex.synchronize { concurrent_fibers << task_fiber }
