@@ -1,10 +1,10 @@
 class Cloudflare::Scanner
   struct Task
     struct Block
-      property ipRange : IPAddress
+      property ipBlock : IPAddress
       property expects : Array(Expect)
 
-      def initialize(@ipRange : IPAddress, @expects : Array(Expect) = [] of Expect)
+      def initialize(@ipBlock : IPAddress, @expects : Array(Expect) = [] of Expect)
       end
 
       struct Expect

@@ -12,7 +12,7 @@ class Cloudflare::Scanner
       skip_count = 0_i32
       each_times = 0_i32
 
-      block.ipRange.each do |ip_address|
+      block.ipBlock.each do |ip_address|
         break if failure_times == options.scanner.quirks.maximumNumberOfFailuresPerBlock
         break if each_times == options.scanner.quirks.numberOfScansPerBlock
         next skip_count -= 1_i32 unless skip_count.zero?
@@ -44,7 +44,7 @@ class Cloudflare::Scanner
         next unless expect = block.expects.find { |expect| iata == expect.iata }
 
         each_times += 1_i32
-        caching.set ip_range: block.ipRange, iata: iata, priority: expect.priority,
+        caching.set ip_block: block.ipBlock, iata: iata, priority: expect.priority,
           ip_address: Socket::IPAddress.new(address: ip_address.address, port: 0_i32)
 
         sleep options.scanner.quirks.sleep

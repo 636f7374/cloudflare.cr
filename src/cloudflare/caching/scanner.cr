@@ -26,7 +26,7 @@ module Cloudflare::Caching
       @mutex.synchronize do
         time_local = Time.local
 
-        entries.each do |ip_range, entry_set|
+        entries.each do |ip_block, entry_set|
           temporary_set = Set(Entry).new
 
           entry_set.each do |entry|
@@ -34,22 +34,22 @@ module Cloudflare::Caching
             temporary_set << entry
           end
 
-          entries[ip_range] = temporary_set
+          entries[ip_block] = temporary_set
         end
       end
 
       true
     end
 
-    def set(ip_range : IPAddress, iata : Needles::IATA, priority : UInt8, ip_address : Socket::IPAddress)
+    def set(ip_block : IPAddress, iata : Needles::IATA, priority : UInt8, ip_address : Socket::IPAddress)
       inactive_entry_cleanup
 
       @mutex.synchronize do
-        entry_set = entries[ip_range] ||= Set(Entry).new
+        entry_set = entries[ip_block] ||= Set(Entry).new
 
         if entry_set.size < options.scanner.caching.ipAddressCapacityPerBlock
           entry_set << Entry.new iata: iata, priority: priority, ipAddress: ip_address
-          entries[ip_range] = entry_set
+          entries[ip_block] = entry_set
 
           return
         end
@@ -61,7 +61,7 @@ module Cloudflare::Caching
         when .zero?
           entry_set = (entry_set - Set{entry_set.first})
           entry_set << Entry.new iata: iata, priority: priority, ipAddress: ip_address
-          entries[ip_range] = entry_set
+          entries[ip_block] = entry_set
         else
           case percentage
           when .< 50_i32
@@ -70,7 +70,7 @@ module Cloudflare::Caching
 
               entry_set = (entry_set - Set{entry})
               entry_set << Entry.new iata: iata, priority: priority, ipAddress: ip_address
-              entries[ip_range] = entry_set
+              entries[ip_block] = entry_set
 
               return
             end
@@ -80,7 +80,7 @@ module Cloudflare::Caching
 
               entry_set = (entry_set - Set{entry})
               entry_set << Entry.new iata: iata, priority: priority, ipAddress: ip_address
-              entries[ip_range] = entry_set
+              entries[ip_block] = entry_set
 
               return
             end
@@ -93,7 +93,7 @@ module Cloudflare::Caching
       _entries = @mutex.synchronize { entries.dup }
       list = [] of Tuple(UInt8, Needles::IATA, Socket::IPAddress)
 
-      _entries.each do |ip_range, entry_set|
+      _entries.each do |ip_block, entry_set|
         entry_set.each { |entry| list << Tuple.new entry.priority, entry.iata, entry.ipAddress }
       end
 

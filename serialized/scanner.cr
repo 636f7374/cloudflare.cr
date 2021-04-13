@@ -17,10 +17,10 @@ module Cloudflare::Serialized
       unwrapped_blocks = Set(Cloudflare::Scanner::Task::Block).new
 
       blocks.each do |block|
-        _ip_range = IPAddress.new block.ipRange rescue nil
-        next unless _ip_range
+        _ip_block = IPAddress.new block.ipBlock rescue nil
+        next unless _ip_block
 
-        unwrapped_blocks << Cloudflare::Scanner::Task::Block.new ipRange: _ip_range, expects: block.get_options_expects
+        unwrapped_blocks << Cloudflare::Scanner::Task::Block.new ipBlock: _ip_block, expects: block.get_options_expects
       end
 
       options_scanner.timeout = timeout.unwrap
@@ -37,11 +37,11 @@ module Cloudflare::Serialized
       struct Block
         include YAML::Serializable
 
-        property ipRange : String
+        property ipBlock : String
         property expects : Array(Expect)
         property excludes : Array(Expect)?
 
-        def initialize(@ipRange : String = String.new, @expects : Array(Expect) = [] of Expect, @excludes : Array(Expect)? = [] of Expect)
+        def initialize(@ipBlock : String = String.new, @expects : Array(Expect) = [] of Expect, @excludes : Array(Expect)? = [] of Expect)
         end
 
         private def unwrap_expects : Array(Cloudflare::Scanner::Task::Block::Expect)

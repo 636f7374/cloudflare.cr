@@ -4,7 +4,7 @@ require "../serialized/*"
 
 text = %(---
 blocks:
-  - ipRange: 103.21.244.0/24
+  - ipBlock: 103.21.244.0/24
     expects:
       - name: bom
         priority: 0
@@ -15,7 +15,7 @@ blocks:
     excludes:
       - name: sin
         type: iata
-  - ipRange: 172.64.228.0/24
+  - ipBlock: 172.64.228.0/24
     expects:
       - name: nrt
         priority: 1
