@@ -73,13 +73,13 @@ struct Cloudflare::Options
     def get_blocks : Set(IPAddress::IPv4 | IPAddress::IPv6)
       case scanIpAddressType
       in .ipv4_only?
-        Cloudflare::Block::Ipv4
+        Cloudflare::IpBlock::Ipv4
       in .ipv6_only?
-        Cloudflare::Block::Ipv6
+        Cloudflare::IpBlock::Ipv6
       in .both?
         list = Set(Set(IPAddress::IPv4 | IPAddress::IPv6)).new
-        list << Cloudflare::Block::Ipv4
-        list << Cloudflare::Block::Ipv6
+        list << Cloudflare::IpBlock::Ipv4
+        list << Cloudflare::IpBlock::Ipv6
 
         list.map(&.to_a).flatten.to_set
       end

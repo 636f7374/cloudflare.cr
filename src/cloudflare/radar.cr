@@ -59,7 +59,7 @@ class Cloudflare::Radar
         break if blocks_iterator_next.is_a? Iterator::Stop
 
         task_fiber = spawn do
-          task = Task.new block: blocks_iterator_next, storage: storage, options: options
+          task = Task.new ipBlock: blocks_iterator_next, storage: storage, options: options
           task.perform
         end
 

@@ -38,12 +38,13 @@ class Cloudflare::Radar
       end
     end
 
-    def set(block : IPAddress, edge : Needles::Edge) : Bool
+    def set(ip_block : IPAddress, edge : Needles::Edge) : Bool
       @mutex.synchronize do
-        text_block = String.build { |io| io << block.address << "/" << block.prefix }
+        text_block = String.build { |io| io << ip_block.address << '/' << ip_block.prefix }
         entry = entries[text_block] ||= Entry.new
         visits = entry.edges[edge] ||= 0_i64
         entry.edges[edge] = visits += 1_i32
+
         entries[text_block] = entry
       end
 
