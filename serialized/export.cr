@@ -2,20 +2,20 @@ module Cloudflare::Serialized
   struct Export
     include YAML::Serializable
 
-    property blocks : Array(Entry)
+    property ipBlocks : Array(Entry)
     property startingTime : Time
     property createdAt : Time
 
-    def initialize(@blocks : Array(Entry) = [] of Entry, @startingTime : Time = Time.local, @createdAt : Time = Time.local)
+    def initialize(@ipBlocks : Array(Entry) = [] of Entry, @startingTime : Time = Time.local, @createdAt : Time = Time.local)
     end
 
     struct Entry
       include YAML::Serializable
 
-      property block : String
+      property ipBlock : String
       property edges : Hash(String, Int64)
 
-      def initialize(@block : String = String.new, @edges : Hash(String, Int64) = Hash(String, Int64).new)
+      def initialize(@ipBlock : String = String.new, @edges : Hash(String, Int64) = Hash(String, Int64).new)
       end
     end
   end

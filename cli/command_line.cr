@@ -152,10 +152,10 @@ module Cloudflare::CommandLine
 
     radar.storage.each do |block, entry|
       serialized_export_entry = Serialized::Export::Entry.new
-      serialized_export_entry.block = block
+      serialized_export_entry.ipBlock = block
       entry.edges.each { |name, count| serialized_export_entry.edges[name.to_s] = count }
 
-      serialized_export.blocks << serialized_export_entry
+      serialized_export.ipBlocks << serialized_export_entry
     end
 
     serialized_export.createdAt = Time.local
