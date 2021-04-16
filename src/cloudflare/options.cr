@@ -70,7 +70,7 @@ struct Cloudflare::Options
       @timeout = TimeOut.new
     end
 
-    def get_blocks : Set(IPAddress::IPv4 | IPAddress::IPv6)
+    def get_ip_blocks : Set(IPAddress::IPv4 | IPAddress::IPv6)
       case scanIpAddressType
       in .ipv4_only?
         Cloudflare::IpBlock::Ipv4
@@ -86,27 +86,29 @@ struct Cloudflare::Options
     end
 
     def get_prefix_24_blocks : Set(IPAddress::IPv4 | IPAddress::IPv6)
-      to_prefix_24 blocks: get_blocks
+      to_prefix_24 ip_blocks: get_ip_blocks
     end
 
-    private def to_prefix_24(blocks : Set(IPAddress::IPv4 | IPAddress::IPv6)) : Set(IPAddress::IPv4 | IPAddress::IPv6)
+    private def to_prefix_24(ip_blocks : Set(IPAddress::IPv4 | IPAddress::IPv6)) : Set(IPAddress::IPv4 | IPAddress::IPv6)
       concurrent_mutex = Mutex.new :unchecked
       concurrent_fibers = Set(Fiber).new
       list_mutex = Mutex.new :unchecked
       list = Set(IPAddress::IPv4 | IPAddress::IPv6).new
 
       main_concurrent_fiber = spawn do
-        blocks.each do |block|
+        ip_blocks.each do |ip_block|
+          next list_mutex.synchronize { list << ip_block } if 24_i32 <= ip_block.prefix.to_i
+
           task_fiber = spawn do
-            if (block.prefix < 24_i32) && block.is_a?(IPAddress::IPv4)
-              block.subnets(24_i32).each do |prefix_24_block|
+            if ip_block.is_a? IPAddress::IPv4
+              ip_block.subnets(24_i32).each do |prefix_24_block|
                 list_mutex.synchronize { list << prefix_24_block }
               end
 
               next
             end
 
-            list_mutex.synchronize { list << block }
+            list_mutex.synchronize { list << ip_block }
           end
 
           concurrent_mutex.synchronize { concurrent_fibers << task_fiber }
