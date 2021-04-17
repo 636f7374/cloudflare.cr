@@ -33,19 +33,19 @@ class Cloudflare::Radar
     true
   end
 
-  def perform(blocks : Set(IPAddress::IPv4 | IPAddress::IPv6)) : Bool
+  def perform(ip_blocks : Set(IPAddress::IPv4 | IPAddress::IPv6)) : Bool
     reset_tasks_number
 
-    numberOfTasks.set blocks.size.to_u64
-    concurrent_process_task blocks: blocks
+    numberOfTasks.set ip_blocks.size.to_u64
+    concurrent_process_task ip_blocks: ip_blocks
 
     true
   end
 
-  private def concurrent_process_task(blocks : Set(IPAddress::IPv4 | IPAddress::IPv6))
+  private def concurrent_process_task(ip_blocks : Set(IPAddress::IPv4 | IPAddress::IPv6))
     concurrent_mutex = Mutex.new :unchecked
     concurrent_fibers = Array(Fiber).new
-    blocks_iterator = blocks.each
+    blocks_iterator = ip_blocks.each
 
     main_concurrent_fiber = spawn do
       loop do

@@ -9,7 +9,7 @@ module Cloudflare::Serialized
       property skipRange : Array(Int32)
       property excludes : Array(Array(Needles::Edge))?
       property timeout : TimeOut
-      property blocks : Array(String)
+      property ipBlocks : Array(String)
 
       def initialize
         @concurrentCount = 220_i32
@@ -20,7 +20,7 @@ module Cloudflare::Serialized
           Needles::Edge::LosAngeles_UnitedStates, Needles::Edge::SanJose_UnitedStates,
         ]]
         @timeout = TimeOut.new
-        @blocks = [] of String
+        @ipBlocks = [] of String
       end
 
       private def check_skip_range!

@@ -22,7 +22,7 @@ module Cloudflare::CommandLine
     output_path = serialized_redar.get_output_path!
     radar = serialized_redar.unwrap
 
-    rader_fiber = spawn { radar.perform blocks: radar.options.radar.get_prefix_24_blocks }
+    rader_fiber = spawn { radar.perform ip_blocks: radar.options.radar.get_prefix_24_ip_blocks }
 
     loop do
       rader_fiber_dead = rader_fiber.dead?
@@ -45,8 +45,8 @@ module Cloudflare::CommandLine
     output_path = serialized_redar.get_output_path!
     radar = serialized_redar.unwrap
 
-    prefix_24_blocks = radar.options.radar.get_prefix_24_blocks
-    serialized_callees = split_parallel_serialized_callee_set serialized_redar: serialized_redar, parallel: parallel, blocks: prefix_24_blocks
+    prefix_24_ip_blocks = radar.options.radar.get_prefix_24_ip_blocks
+    serialized_callees = split_parallel_serialized_callee_set serialized_redar: serialized_redar, parallel: parallel, ip_blocks: prefix_24_ip_blocks
 
     exports = [] of Cloudflare::Serialized::Export
     exports_mutex = Mutex.new :unchecked
@@ -102,10 +102,10 @@ module Cloudflare::CommandLine
     abort "CommandLine.process_callee: (Error: CommandLine::OptionParser.externalController is Nil!)" unless external_controller
 
     starting_time = Time.local
-    blocks = serialized_redar.blocks.map { |text_block| IPAddress.new addr: text_block }
+    ip_blocks = serialized_redar.ipBlocks.map { |ip_block_text| IPAddress.new addr: ip_block_text }
     radar = serialized_redar.unwrap
 
-    rader_fiber = spawn { radar.perform blocks: blocks.to_set }
+    rader_fiber = spawn { radar.perform ip_blocks: ip_blocks.to_set }
 
     loop do
       rader_fiber_dead = rader_fiber.dead?
@@ -150,9 +150,9 @@ module Cloudflare::CommandLine
     serialized_export = Serialized::Export.new
     serialized_export.startingTime = starting_time
 
-    radar.storage.each do |block, entry|
+    radar.storage.each do |ip_block, entry|
       serialized_export_entry = Serialized::Export::Entry.new
-      serialized_export_entry.ipBlock = block
+      serialized_export_entry.ipBlock = ip_block
       entry.edges.each { |name, count| serialized_export_entry.edges[name.to_s] = count }
 
       serialized_export.ipBlocks << serialized_export_entry
@@ -181,14 +181,14 @@ module Cloudflare::CommandLine
     output.close
   end
 
-  private def self.split_parallel_serialized_callee_set(serialized_redar : Serialized::Radar::Standard, parallel : Serialized::Radar::Standard::Parallel, blocks : Set(IPAddress::IPv4 | IPAddress::IPv6)) : Set(Serialized::Radar::Callee)
+  private def self.split_parallel_serialized_callee_set(serialized_redar : Serialized::Radar::Standard, parallel : Serialized::Radar::Standard::Parallel, ip_blocks : Set(IPAddress::IPv4 | IPAddress::IPv6)) : Set(Serialized::Radar::Callee)
     serialized_callees = Set(Serialized::Radar::Callee).new
 
-    per_callee_blocks_count = (blocks.size / parallel.calleeCount).to_i32
+    per_callee_blocks_count = (ip_blocks.size / parallel.calleeCount).to_i32
     per_callee_blocks_count += 1_i32
 
-    blocks.each_slice per_callee_blocks_count do |blocks|
-      next if blocks.empty?
+    ip_blocks.each_slice per_callee_blocks_count do |slice_ip_blocks|
+      next if slice_ip_blocks.empty?
       serialized_callee = Serialized::Radar::Callee.new
 
       serialized_callee.concurrentCount = serialized_redar.concurrentCount
@@ -197,7 +197,7 @@ module Cloudflare::CommandLine
       serialized_callee.skipRange = serialized_redar.skipRange
       serialized_callee.excludes = serialized_redar.excludes
       serialized_callee.timeout = serialized_redar.timeout.to_callee_timeout
-      serialized_callee.blocks = blocks.map { |block| String.build { |io| io << block.address << '/' << block.prefix } }
+      serialized_callee.ipBlocks = slice_ip_blocks.map { |ip_blocks| String.build { |io| io << ip_blocks.address << '/' << ip_blocks.prefix } }
 
       serialized_callees << serialized_callee
     end

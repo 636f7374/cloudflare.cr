@@ -85,7 +85,7 @@ struct Cloudflare::Options
       end
     end
 
-    def get_prefix_24_blocks : Set(IPAddress::IPv4 | IPAddress::IPv6)
+    def get_prefix_24_ip_blocks : Set(IPAddress::IPv4 | IPAddress::IPv6)
       to_prefix_24 ip_blocks: get_ip_blocks
     end
 
