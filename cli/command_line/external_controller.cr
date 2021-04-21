@@ -87,7 +87,7 @@ module Cloudflare::CommandLine
           begin
             add_client client: client
 
-            slice = serialized_callee.to_json.to_slice
+            slice = serialized_callee.to_yaml.to_slice
             client.write_bytes slice.size, IO::ByteFormat::BigEndian
             client.write slice: slice
             client.flush

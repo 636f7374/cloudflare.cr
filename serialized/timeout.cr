@@ -12,16 +12,6 @@ module Cloudflare::Serialized
       @connect = 2_i32
     end
 
-    def to_callee_timeout : Radar::Callee::TimeOut
-      timeout = Radar::Callee::TimeOut.new
-
-      timeout.read = read
-      timeout.write = write
-      timeout.connect = connect
-
-      timeout
-    end
-
     def unwrap : Cloudflare::TimeOut
       timeout = Cloudflare::TimeOut.new
 

@@ -28,7 +28,7 @@ module Cloudflare::CommandLine
 
       memory = IO::Memory.new length
       copy_length = IO.copy external_controller, memory, length
-      @radar = serialized_callee = Serialized::Radar::Callee.from_json String.new memory.to_slice[0_i32, copy_length]
+      @radar = serialized_callee = Serialized::Radar::Callee.from_yaml String.new memory.to_slice[0_i32, copy_length]
 
       serialized_callee
     end
@@ -55,7 +55,7 @@ module Cloudflare::CommandLine
           serialized_standard = Serialized::Radar::Standard.from_yaml File.read(filename: path) rescue nil
           serialized_standard.try { |standard| @radar = standard }
 
-          serialized_callee = Serialized::Radar::Callee.from_json File.read(filename: path) rescue nil
+          serialized_callee = Serialized::Radar::Callee.from_yaml File.read(filename: path) rescue nil
           serialized_callee.try { |callee| @radar = callee }
         end
 

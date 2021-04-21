@@ -196,7 +196,7 @@ module Cloudflare::CommandLine
       serialized_callee.maximumNumberOfFailuresPerBlock = serialized_redar.maximumNumberOfFailuresPerBlock
       serialized_callee.skipRange = serialized_redar.skipRange
       serialized_callee.excludes = serialized_redar.excludes
-      serialized_callee.timeout = serialized_redar.timeout.to_callee_timeout
+      serialized_callee.timeout = serialized_redar.timeout
       serialized_callee.ipBlocks = slice_ip_blocks.map { |ip_blocks| String.build { |io| io << ip_blocks.address << '/' << ip_blocks.prefix } }
 
       serialized_callees << serialized_callee

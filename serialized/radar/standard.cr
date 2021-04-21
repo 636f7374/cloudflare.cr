@@ -53,22 +53,21 @@ module Cloudflare::Serialized
       end
 
       def unwrap : Cloudflare::Radar
-        options = Cloudflare::Options.new
-        radar = Cloudflare::Options::Radar.new
+        check_skip_range!
 
+        radar = Cloudflare::Options::Radar.new
         radar.concurrentCount = concurrentCount
         radar.scanIpAddressType = scanIpAddressType
         radar.numberOfScansPerBlock = numberOfScansPerBlock
         radar.maximumNumberOfFailuresPerBlock = maximumNumberOfFailuresPerBlock
         radar.timeout = timeout.unwrap
-
-        check_skip_range!
         radar.skipRange = (skipRange.first..skipRange.last)
 
         if _excludes = excludes
           radar.excludes = _excludes.map(&.to_set).to_set
         end
 
+        options = Cloudflare::Options.new
         options.radar = radar
 
         Cloudflare::Radar.new options: options
