@@ -75,7 +75,7 @@ excludes:
   - - LosAngeles_UnitedStates
     - SanJose_UnitedStates
 parallel:
-  executableName: radar
+  executableName: cloudflare
   calleeCount: 4
   listenAddress: tcp://0.0.0.0:4832
   type: sub_process
@@ -103,7 +103,7 @@ excludes:
   - - LosAngeles_UnitedStates
     - SanJose_UnitedStates
 parallel:
-  executableName: radar
+  executableName: cloudflare
   calleeCount: 4
   listenAddress: tcp://0.0.0.0:4832
   type: distributed
@@ -131,7 +131,7 @@ excludes:
   - - LosAngeles_UnitedStates
     - SanJose_UnitedStates
 parallel:
-  executableName: radar
+  executableName: cloudflare
   calleeCount: 4
   subProcessCalleeCount: 2
   listenAddress: tcp://0.0.0.0:4832
