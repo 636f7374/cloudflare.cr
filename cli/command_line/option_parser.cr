@@ -35,7 +35,7 @@ module Cloudflare::CommandLine
 
     def parse(args : Array(String) = ARGV)
       ::OptionParser.parse args: args do |parser|
-        parser.banner = "Usage: radar [command] [--] [arguments]"
+        parser.banner = "Usage: cloudflare [command] [--] [arguments]"
 
         parser.on "-e +", "--external-controller +", "Specify the Controller of the Radar." do |address|
           case _address = Socket::Address.parse address
@@ -52,11 +52,8 @@ module Cloudflare::CommandLine
         end
 
         parser.on "-i +", "--import +", "Specify Radar configuration file path." do |path|
-          serialized_standard = Serialized::Radar::Standard.from_yaml File.read(filename: path) rescue nil
+          serialized_standard = Serialized::Radar::Standard.from_yaml File.read(filename: path)
           serialized_standard.try { |standard| @radar = standard }
-
-          serialized_callee = Serialized::Radar::Callee.from_yaml File.read(filename: path) rescue nil
-          serialized_callee.try { |callee| @radar = callee }
         end
 
         parser.on "-o +", "--output +", "Specify the output path of the Radar." do |path|

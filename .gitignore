@@ -2,5 +2,5 @@
 shard.lock
 .vscode
 /lib/
-bin/radar*
+bin/cloudflare*
 cli/lib/
