@@ -3,7 +3,7 @@ require "../serialized/serialized.cr"
 require "../serialized/*"
 
 text = %(---
-taskEntries:
+tasks:
   - ipBlock: 103.21.244.0/24
     expects:
       - name: bom

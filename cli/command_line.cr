@@ -57,14 +57,11 @@ module Cloudflare::CommandLine
     in Socket::UNIXAddress
       caller = UNIXServer.new path: listen_address.path
     in Socket::Address
-      abort "CommandLine.process_standard_parallel_sub_process: Unknown Parallel.listenAddress type (not IPAddress or UNIXAddress)."
+      abort "CommandLine.process_parallel: Unknown Parallel.listenAddress type (not IPAddress or UNIXAddress)."
     end
 
     external_controller = ExternalController.new io: caller, calleeSet: serialized_callees
-
-    spawn do
-      external_controller.perform
-    end
+    spawn { external_controller.perform }
 
     case parallel.type
     in .sub_process?
@@ -122,6 +119,7 @@ module Cloudflare::CommandLine
       if rader_fiber_dead
         export = create_serialized_export radar: radar, starting_time: starting_time
         slice = export.to_yaml.to_slice
+
         external_controller.write_bytes slice.size, IO::ByteFormat::BigEndian
         external_controller.write slice: slice
         external_controller.flush
@@ -184,10 +182,10 @@ module Cloudflare::CommandLine
   private def self.split_parallel_serialized_callee_set(serialized_redar : Serialized::Radar::Standard, parallel : Serialized::Radar::Standard::Parallel, ip_blocks : Set(IPAddress::IPv4 | IPAddress::IPv6)) : Set(Serialized::Radar::Callee)
     serialized_callees = Set(Serialized::Radar::Callee).new
 
-    per_callee_blocks_count = (ip_blocks.size / parallel.calleeCount).to_i32
-    per_callee_blocks_count += 1_i32
+    per_callee_ip_blocks_count = (ip_blocks.size / parallel.calleeCount).to_i32
+    per_callee_ip_blocks_count += 1_i32
 
-    ip_blocks.each_slice per_callee_blocks_count do |slice_ip_blocks|
+    ip_blocks.each_slice per_callee_ip_blocks_count do |slice_ip_blocks|
       next if slice_ip_blocks.empty?
       serialized_callee = Serialized::Radar::Callee.new
 
@@ -198,7 +196,6 @@ module Cloudflare::CommandLine
       serialized_callee.excludes = serialized_redar.excludes
       serialized_callee.timeout = serialized_redar.timeout
       serialized_callee.ipBlocks = slice_ip_blocks.map { |ip_blocks| String.build { |io| io << ip_blocks.address << '/' << ip_blocks.prefix } }
-
       serialized_callees << serialized_callee
     end
 

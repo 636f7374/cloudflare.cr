@@ -2,25 +2,25 @@ module Cloudflare::Serialized
   struct Scanner
     include YAML::Serializable
 
-    property taskEntries : Array(Entry)
+    property tasks : Array(Entry)
     property caching : Caching
     property quirks : Quirks
     property timeout : TimeOut
     property switcher : Switcher
 
-    def initialize(@taskEntries : Array(Task::Block) = [] of Task::Block, @caching : Caching = Caching.new, @quirks : Quirks = Quirks.new, @timeout : TimeOut = TimeOut.new, @switcher : Switcher = Switcher.new)
+    def initialize(@tasks : Array(Task::Block) = [] of Task::Block, @caching : Caching = Caching.new, @quirks : Quirks = Quirks.new, @timeout : TimeOut = TimeOut.new, @switcher : Switcher = Switcher.new)
     end
 
     def unwrap : Cloudflare::Scanner
       options = Cloudflare::Options.new
       options_scanner = Cloudflare::Options::Scanner.new
-      task_entries = Set(Cloudflare::Scanner::Task::Entry).new
+      unwrapped_tasks = Set(Cloudflare::Scanner::Task::Entry).new
 
-      taskEntries.each do |task_entry|
+      tasks.each do |task_entry|
         _ip_block = IPAddress.new task_entry.ipBlock rescue nil
         next unless _ip_block
 
-        task_entries << Cloudflare::Scanner::Task::Entry.new ipBlock: _ip_block, expects: task_entry.get_options_expects
+        unwrapped_tasks << Cloudflare::Scanner::Task::Entry.new ipBlock: _ip_block, expects: task_entry.get_options_expects
       end
 
       options_scanner.timeout = timeout.unwrap
@@ -30,7 +30,7 @@ module Cloudflare::Serialized
       options.scanner = options_scanner
       options.switcher = switcher.unwrap
 
-      Cloudflare::Scanner.new task_entries: task_entries, options: options
+      Cloudflare::Scanner.new tasks: unwrapped_tasks, options: options
     end
 
     struct Entry

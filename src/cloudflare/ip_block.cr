@@ -717,11 +717,12 @@ module Cloudflare::IpBlock
   def self.includes?(ip_address : Socket::IPAddress) : Bool
     _ip_address = IPAddress.new addr: ip_address.address
 
-    Ipv4.each { |block| return true if block.includes? _ip_address }
-    return false if ip_address.family.inet?
-
-    Ipv6.each { |block| return true if block.includes? _ip_address }
-    return false if ip_address.family.inet6?
+    case _ip_address
+    in IPAddress::IPv4
+      Ipv4.each { |ip_block| return true if ip_block.includes? _ip_address }
+    in IPAddress::IPv6
+      Ipv6.each { |ip_block| return true if ip_block.includes? _ip_address }
+    end
 
     false
   end

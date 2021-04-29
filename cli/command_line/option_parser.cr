@@ -61,6 +61,7 @@ module Cloudflare::CommandLine
           next unless _radar.is_a? Serialized::Radar::Standard
 
           _radar.outputPath = path
+          @radar = _radar
         end
 
         parser.on "-v", "--version", "Get version information of this Radar." do
