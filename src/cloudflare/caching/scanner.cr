@@ -47,7 +47,7 @@ module Cloudflare::Caching
       @mutex.synchronize do
         entry_set = entries[ip_block] ||= Set(Entry).new
 
-        if entry_set.size < options.scanner.caching.ipAddressCapacityPerBlock
+        if entry_set.size < options.scanner.caching.ipAddressCapacityPerIpBlock
           entry_set << Entry.new iata: iata, priority: priority, ipAddress: ip_address
           entries[ip_block] = entry_set
 

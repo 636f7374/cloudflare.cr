@@ -22,23 +22,23 @@ struct Cloudflare::Options
     end
 
     struct Caching
-      property ipAddressCapacityPerBlock : UInt8
+      property ipAddressCapacityPerIpBlock : UInt8
       property clearInterval : Time::Span
 
       def initialize
-        @ipAddressCapacityPerBlock = 3_u8
+        @ipAddressCapacityPerIpBlock = 3_u8
         @clearInterval = 30_u8.seconds
       end
     end
 
     struct Quirks
-      property numberOfScansPerBlock : Int32
-      property maximumNumberOfFailuresPerBlock : Int32
+      property numberOfScansPerIpBlock : Int32
+      property maximumNumberOfFailuresPerIpBlock : Int32
       property skipRange : Range(Int32, Int32)
       property numberOfSleepPerRequest : Time::Span
       property numberOfSleepPerRound : Time::Span
 
-      def initialize(@numberOfScansPerBlock : Int32 = 25_i32, @maximumNumberOfFailuresPerBlock : Int32 = 15_i32, @skipRange : Range(Int32, Int32) = (6_i32..12_i32),
+      def initialize(@numberOfScansPerIpBlock : Int32 = 25_i32, @maximumNumberOfFailuresPerIpBlock : Int32 = 15_i32, @skipRange : Range(Int32, Int32) = (6_i32..12_i32),
                      @numberOfSleepPerRequest : Time::Span = 1_u8.seconds, @numberOfSleepPerRound : Time::Span = 5_u8.seconds)
       end
     end
@@ -53,8 +53,8 @@ struct Cloudflare::Options
 
     property concurrentCount : Int32
     property scanIpAddressType : ScanIpAddressType
-    property numberOfScansPerBlock : Int32
-    property maximumNumberOfFailuresPerBlock : Int32
+    property numberOfScansPerIpBlock : Int32
+    property maximumNumberOfFailuresPerIpBlock : Int32
     property skipRange : Range(Int32, Int32)
     property excludes : Set(Set(Needles::Edge))
     property timeout : TimeOut
@@ -62,8 +62,8 @@ struct Cloudflare::Options
     def initialize
       @concurrentCount = 220_i32
       @scanIpAddressType = ScanIpAddressType::Ipv4Only
-      @numberOfScansPerBlock = 25_i32
-      @maximumNumberOfFailuresPerBlock = 15_i32
+      @numberOfScansPerIpBlock = 25_i32
+      @maximumNumberOfFailuresPerIpBlock = 15_i32
       @skipRange = (6_i32..12_i32)
       @excludes = Set(Set(Needles::Edge)).new
       @timeout = TimeOut.new

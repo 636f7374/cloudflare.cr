@@ -13,8 +13,8 @@ class Cloudflare::Scanner
       each_times = Atomic(Int32).new 0_i32
 
       entry.ipBlock.each do |ip_address|
-        break if failure_times.get == options.scanner.quirks.maximumNumberOfFailuresPerBlock
-        break if each_times.get == options.scanner.quirks.numberOfScansPerBlock
+        break if failure_times.get == options.scanner.quirks.maximumNumberOfFailuresPerIpBlock
+        break if each_times.get == options.scanner.quirks.numberOfScansPerIpBlock
         next skip_count.sub 1_i32 unless skip_count.get.zero?
         skip_count.set options.scanner.quirks.skipRange.sample
         _ip_address = Socket::IPAddress.new address: ip_address.address, port: port

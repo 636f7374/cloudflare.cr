@@ -30,11 +30,11 @@ tasks:
         priority: 2
         type: iata
 caching:
-  ipAddressCapacityPerBlock: 4
+  ipAddressCapacityPerIpBlock: 4
   clearInterval: 30
 quirks:
-  numberOfScansPerBlock: 50
-  maximumNumberOfFailuresPerBlock: 25
+  numberOfScansPerIpBlock: 50
+  maximumNumberOfFailuresPerIpBlock: 25
   sleep: 1
   skipRange:
     - 1

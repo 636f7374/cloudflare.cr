@@ -190,8 +190,8 @@ module Cloudflare::CommandLine
       serialized_callee = Serialized::Radar::Callee.new
 
       serialized_callee.concurrentCount = serialized_redar.concurrentCount
-      serialized_callee.numberOfScansPerBlock = serialized_redar.numberOfScansPerBlock
-      serialized_callee.maximumNumberOfFailuresPerBlock = serialized_redar.maximumNumberOfFailuresPerBlock
+      serialized_callee.numberOfScansPerIpBlock = serialized_redar.numberOfScansPerIpBlock
+      serialized_callee.maximumNumberOfFailuresPerIpBlock = serialized_redar.maximumNumberOfFailuresPerIpBlock
       serialized_callee.skipRange = serialized_redar.skipRange
       serialized_callee.excludes = serialized_redar.excludes
       serialized_callee.timeout = serialized_redar.timeout

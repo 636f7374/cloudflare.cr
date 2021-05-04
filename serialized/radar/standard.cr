@@ -12,8 +12,8 @@ module Cloudflare::Serialized
       property parallel : Parallel?
       property concurrentCount : Int32
       property scanIpAddressType : Cloudflare::Options::Radar::ScanIpAddressType
-      property numberOfScansPerBlock : Int32
-      property maximumNumberOfFailuresPerBlock : Int32
+      property numberOfScansPerIpBlock : Int32
+      property maximumNumberOfFailuresPerIpBlock : Int32
       property skipRange : Array(Int32)
       property excludes : Array(Array(Needles::Edge))?
       property timeout : TimeOut
@@ -23,8 +23,8 @@ module Cloudflare::Serialized
         @parallel = nil
         @concurrentCount = 220_i32
         @scanIpAddressType = Cloudflare::Options::Radar::ScanIpAddressType::Ipv4Only
-        @numberOfScansPerBlock = 25_i32
-        @maximumNumberOfFailuresPerBlock = 15_i32
+        @numberOfScansPerIpBlock = 25_i32
+        @maximumNumberOfFailuresPerIpBlock = 15_i32
         @skipRange = [3_i32, 6_i32]
         @excludes = [[Needles::Edge::LosAngeles_UnitedStates], [Needles::Edge::SanJose_UnitedStates], [
           Needles::Edge::LosAngeles_UnitedStates, Needles::Edge::SanJose_UnitedStates,
@@ -58,8 +58,8 @@ module Cloudflare::Serialized
         radar = Cloudflare::Options::Radar.new
         radar.concurrentCount = concurrentCount
         radar.scanIpAddressType = scanIpAddressType
-        radar.numberOfScansPerBlock = numberOfScansPerBlock
-        radar.maximumNumberOfFailuresPerBlock = maximumNumberOfFailuresPerBlock
+        radar.numberOfScansPerIpBlock = numberOfScansPerIpBlock
+        radar.maximumNumberOfFailuresPerIpBlock = maximumNumberOfFailuresPerIpBlock
         radar.timeout = timeout.unwrap
         radar.skipRange = (skipRange.first..skipRange.last)
 

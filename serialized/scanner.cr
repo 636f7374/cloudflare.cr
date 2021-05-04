@@ -126,20 +126,20 @@ module Cloudflare::Serialized
     struct Caching
       include YAML::Serializable
 
-      property ipAddressCapacityPerBlock : UInt8
+      property ipAddressCapacityPerIpBlock : UInt8
       property clearInterval : UInt8
 
       def initialize
-        @ipAddressCapacityPerBlock = 3_u8
+        @ipAddressCapacityPerIpBlock = 3_u8
         @clearInterval = 30_u8
       end
 
       def unwrap : Cloudflare::Options::Scanner::Caching
         caching = Cloudflare::Options::Scanner::Caching.new
 
-        ip_address_capacity_per_block = ipAddressCapacityPerBlock
+        ip_address_capacity_per_block = ipAddressCapacityPerIpBlock
         ip_address_capacity_per_block = 1_u8 if 1_u8 > ip_address_capacity_per_block
-        caching.ipAddressCapacityPerBlock = ip_address_capacity_per_block
+        caching.ipAddressCapacityPerIpBlock = ip_address_capacity_per_block
 
         clear_interval = clearInterval
         clear_interval = 1_u8 if 1_u8 > clear_interval
@@ -153,13 +153,13 @@ module Cloudflare::Serialized
   struct Quirks
     include YAML::Serializable
 
-    property numberOfScansPerBlock : Int32
-    property maximumNumberOfFailuresPerBlock : Int32
+    property numberOfScansPerIpBlock : Int32
+    property maximumNumberOfFailuresPerIpBlock : Int32
     property skipRange : Array(Int32)
     property numberOfSleepPerRequest : UInt8
     property numberOfSleepPerRound : UInt8
 
-    def initialize(@numberOfScansPerBlock : Int32 = 25_i32, @maximumNumberOfFailuresPerBlock : Int32 = 15_i32, @skipRange : Array(Int32) = [3_i32, 6_i32] of Int32, @numberOfSleepPerRequest : UInt8 = 1_u8, @numberOfSleepPerRound : UInt8 = 5_u8)
+    def initialize(@numberOfScansPerIpBlock : Int32 = 25_i32, @maximumNumberOfFailuresPerIpBlock : Int32 = 15_i32, @skipRange : Array(Int32) = [3_i32, 6_i32] of Int32, @numberOfSleepPerRequest : UInt8 = 1_u8, @numberOfSleepPerRound : UInt8 = 5_u8)
     end
 
     private def check_skip_range!
@@ -188,8 +188,8 @@ module Cloudflare::Serialized
     def unwrap : Cloudflare::Options::Scanner::Quirks
       quirks = Cloudflare::Options::Scanner::Quirks.new
 
-      quirks.numberOfScansPerBlock = numberOfScansPerBlock
-      quirks.maximumNumberOfFailuresPerBlock = maximumNumberOfFailuresPerBlock
+      quirks.numberOfScansPerIpBlock = numberOfScansPerIpBlock
+      quirks.maximumNumberOfFailuresPerIpBlock = maximumNumberOfFailuresPerIpBlock
       quirks.skipRange = get_skip_range
       quirks.numberOfSleepPerRequest = numberOfSleepPerRequest.seconds
       quirks.numberOfSleepPerRound = numberOfSleepPerRound.seconds
