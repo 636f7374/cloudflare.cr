@@ -4,21 +4,30 @@ require "../serialized/*"
 
 text = %(---
 tasks:
-  - ipBlock: 103.21.244.0/24
+  - ipBlocks:
+      - 104.19.85.0/24
+      - 104.19.86.0/24
     expects:
-      - name: bom
+      - name: hkg
         priority: 0
         type: iata
+  - ipBlocks:
+      - 103.21.244.0/24
+    expects:
+      - name: bom
+        priority: 1
+        type: iata
       - name: ist
-        priority: 2
+        priority: 3
         type: iata
     excludes:
       - name: sin
         type: iata
-  - ipBlock: 172.64.228.0/24
-    expects:
+  - ipBlocks:
+  172.64.228.0/24
+      - expects:
       - name: nrt
-        priority: 1
+        priority: 2
         type: iata
 caching:
   ipAddressCapacityPerBlock: 4

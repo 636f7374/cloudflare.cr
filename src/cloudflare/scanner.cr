@@ -51,6 +51,8 @@ class Cloudflare::Scanner
         all_dead = concurrent_mutex.synchronize { concurrent_fibers.all? { |fiber| fiber.dead? } }
         next sleep 0.25_f32.seconds unless all_dead
 
+        sleep options.scanner.quirks.numberOfSleepPerRound
+
         break
       end
 

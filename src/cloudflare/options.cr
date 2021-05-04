@@ -3,10 +3,7 @@ struct Cloudflare::Options
   property radar : Radar
   property scanner : Scanner
 
-  def initialize
-    @radar = Radar.new
-    @scanner = Scanner.new
-    @switcher = Switcher.new
+  def initialize(@radar : Radar = Radar.new, @scanner : Scanner = Scanner.new, @switcher : Switcher = Switcher.new)
   end
 
   struct Switcher
@@ -38,9 +35,11 @@ struct Cloudflare::Options
       property numberOfScansPerBlock : Int32
       property maximumNumberOfFailuresPerBlock : Int32
       property skipRange : Range(Int32, Int32)
-      property sleep : Time::Span
+      property numberOfSleepPerRequest : Time::Span
+      property numberOfSleepPerRound : Time::Span
 
-      def initialize(@numberOfScansPerBlock : Int32 = 25_i32, @maximumNumberOfFailuresPerBlock : Int32 = 15_i32, @skipRange : Range(Int32, Int32) = (6_i32..12_i32), @sleep : Time::Span = 1_u8.seconds)
+      def initialize(@numberOfScansPerBlock : Int32 = 25_i32, @maximumNumberOfFailuresPerBlock : Int32 = 15_i32, @skipRange : Range(Int32, Int32) = (6_i32..12_i32),
+                     @numberOfSleepPerRequest : Time::Span = 1_u8.seconds, @numberOfSleepPerRound : Time::Span = 5_u8.seconds)
       end
     end
   end

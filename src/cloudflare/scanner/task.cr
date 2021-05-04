@@ -52,7 +52,7 @@ class Cloudflare::Scanner
         socket_ip_address = Socket::IPAddress.new address: ip_address.address, port: 0_i32
         caching.set ip_block: entry.ipBlock, iata: iata, priority: expect.priority, ip_address: socket_ip_address
 
-        sleep options.scanner.quirks.sleep
+        sleep options.scanner.quirks.numberOfSleepPerRequest
       end
 
       true

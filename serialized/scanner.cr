@@ -17,10 +17,12 @@ module Cloudflare::Serialized
       unwrapped_tasks = Set(Cloudflare::Scanner::Task::Entry).new
 
       tasks.each do |task_entry|
-        _ip_block = IPAddress.new task_entry.ipBlock rescue nil
-        next unless _ip_block
+        task_entry.ipBlocks.each do |ip_block_text|
+          ip_block = IPAddress.new addr: ip_block_text rescue nil
+          next unless ip_block
 
-        unwrapped_tasks << Cloudflare::Scanner::Task::Entry.new ipBlock: _ip_block, expects: task_entry.get_options_expects
+          unwrapped_tasks << Cloudflare::Scanner::Task::Entry.new ipBlock: ip_block, expects: task_entry.get_options_expects
+        end
       end
 
       options_scanner.timeout = timeout.unwrap
@@ -36,11 +38,11 @@ module Cloudflare::Serialized
     struct Entry
       include YAML::Serializable
 
-      property ipBlock : String
+      property ipBlocks : Array(String)
       property expects : Array(Expect)
       property excludes : Array(Expect)?
 
-      def initialize(@ipBlock : String = String.new, @expects : Array(Expect) = [] of Expect, @excludes : Array(Expect)? = [] of Expect)
+      def initialize(@ipBlocks : Array(String) = [] of String, @expects : Array(Expect) = [] of Expect, @excludes : Array(Expect)? = [] of Expect)
       end
 
       private def unwrap_expects : Array(Cloudflare::Scanner::Task::Entry::Expect)
@@ -154,9 +156,10 @@ module Cloudflare::Serialized
     property numberOfScansPerBlock : Int32
     property maximumNumberOfFailuresPerBlock : Int32
     property skipRange : Array(Int32)
-    property sleep : UInt8
+    property numberOfSleepPerRequest : UInt8
+    property numberOfSleepPerRound : UInt8
 
-    def initialize(@numberOfScansPerBlock : Int32 = 25_i32, @maximumNumberOfFailuresPerBlock : Int32 = 15_i32, @skipRange : Array(Int32) = [3_i32, 6_i32] of Int32, @sleep : UInt8 = 1_u8)
+    def initialize(@numberOfScansPerBlock : Int32 = 25_i32, @maximumNumberOfFailuresPerBlock : Int32 = 15_i32, @skipRange : Array(Int32) = [3_i32, 6_i32] of Int32, @numberOfSleepPerRequest : UInt8 = 1_u8, @numberOfSleepPerRound : UInt8 = 5_u8)
     end
 
     private def check_skip_range!
@@ -188,7 +191,8 @@ module Cloudflare::Serialized
       quirks.numberOfScansPerBlock = numberOfScansPerBlock
       quirks.maximumNumberOfFailuresPerBlock = maximumNumberOfFailuresPerBlock
       quirks.skipRange = get_skip_range
-      quirks.sleep = sleep.seconds
+      quirks.numberOfSleepPerRequest = numberOfSleepPerRequest.seconds
+      quirks.numberOfSleepPerRound = numberOfSleepPerRound.seconds
 
       quirks
     end
