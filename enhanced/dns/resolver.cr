@@ -8,7 +8,7 @@ class DNS::Resolver
   end
 
   def getaddrinfo(host : String, port : Int32 = 0_i32, answer_safety_first : Bool = options.addrinfo.answerSafetyFirst,
-                  addrinfo_override : Bool = cloudflare.try &.options.switcher.addrinfoOverride) : Tuple(FetchType, Array(Socket::IPAddress))
+                  addrinfo_override : Bool = cloudflare.try &.options.scanner.switcher.addrinfoOverride) : Tuple(FetchType, Array(Socket::IPAddress))
     # This function is used as an overridable.
     # E.g. Cloudflare.
 

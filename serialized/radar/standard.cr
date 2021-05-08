@@ -3,15 +3,9 @@ module Cloudflare::Serialized
     struct Standard
       include YAML::Serializable
 
-      enum ParallelFlag : UInt8
-        Distributed = 0_u8
-        SubProcess  = 1_u8
-        Hybrid      = 2_u8
-      end
-
       property parallel : Parallel?
       property concurrentCount : Int32
-      property scanIpAddressType : Cloudflare::Options::Radar::ScanIpAddressType
+      property scanIpAddressType : ScanIpAddressType
       property numberOfScansPerIpBlock : Int32
       property maximumNumberOfFailuresPerIpBlock : Int32
       property skipRange : Array(Int32)
@@ -22,7 +16,7 @@ module Cloudflare::Serialized
       def initialize
         @parallel = nil
         @concurrentCount = 220_i32
-        @scanIpAddressType = Cloudflare::Options::Radar::ScanIpAddressType::Ipv4Only
+        @scanIpAddressType = ScanIpAddressType::Ipv4Only
         @numberOfScansPerIpBlock = 25_i32
         @maximumNumberOfFailuresPerIpBlock = 15_i32
         @skipRange = [3_i32, 6_i32]

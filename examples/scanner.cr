@@ -24,8 +24,8 @@ tasks:
       - name: sin
         type: iata
   - ipBlocks:
-  172.64.228.0/24
-      - expects:
+      - 172.64.228.0/24
+    expects:
       - name: nrt
         priority: 2
         type: iata
@@ -35,7 +35,8 @@ caching:
 quirks:
   numberOfScansPerIpBlock: 50
   maximumNumberOfFailuresPerIpBlock: 25
-  sleep: 1
+  numberOfSleepPerRequest: 0
+  numberOfSleepPerRound: 10
   skipRange:
     - 1
     - 2

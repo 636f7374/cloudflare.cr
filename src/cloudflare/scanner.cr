@@ -1,12 +1,12 @@
 class Cloudflare::Scanner
   getter tasks : Set(Task::Entry)
-  getter options : Options
   getter caching : Caching::Scanner
+  getter options : Options
   getter terminated : Bool
   getter running : Bool
   getter mutex : Mutex
 
-  def initialize(@tasks : Set(Task::Entry), @options : Options, @caching : Caching::Scanner)
+  def initialize(@tasks : Set(Task::Entry), @caching : Caching::Scanner, @options : Options)
     @terminated = false
     @running = false
     @mutex = Mutex.new :unchecked
@@ -14,7 +14,7 @@ class Cloudflare::Scanner
 
   def self.new(tasks : Set(Task::Entry), options : Options)
     caching = Cloudflare::Caching::Scanner.new options: options
-    new tasks: tasks, options: options, caching: caching
+    new tasks: tasks, caching: caching, options: options
   end
 
   def caching_to_tuple_ip_addresses : Array(Tuple(Needles::IATA, Socket::IPAddress))
@@ -26,8 +26,8 @@ class Cloudflare::Scanner
   end
 
   def perform
-    raise Exception.new "Scanner.perform: Scanner is already running!" if @mutex.synchronize { running }
-    raise Exception.new "Scanner.perform: Scanner has terminated!" if @mutex.synchronize { terminated }
+    raise Exception.new "Scanner.perform: Scanner is already running!" if @mutex.synchronize { running.dup }
+    raise Exception.new "Scanner.perform: Scanner has terminated!" if @mutex.synchronize { terminated.dup }
     @mutex.synchronize { @running = true }
 
     loop do
@@ -45,7 +45,7 @@ class Cloudflare::Scanner
       end
 
       loop do
-        _terminated = @mutex.synchronize { terminated }
+        _terminated = @mutex.synchronize { terminated.dup }
         break @mutex.synchronize { @running = false } if _terminated
 
         all_dead = concurrent_mutex.synchronize { concurrent_fibers.all? { |fiber| fiber.dead? } }
@@ -61,5 +61,6 @@ class Cloudflare::Scanner
   end
 end
 
+require "http/request"
 require "./caching/*"
 require "./scanner/*"

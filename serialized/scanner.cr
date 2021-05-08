@@ -12,9 +12,8 @@ module Cloudflare::Serialized
     end
 
     def unwrap : Cloudflare::Scanner
-      options = Cloudflare::Options.new
-      options_scanner = Cloudflare::Options::Scanner.new
       unwrapped_tasks = Set(Cloudflare::Scanner::Task::Entry).new
+      options_scanner = Cloudflare::Options::Scanner.new
 
       tasks.each do |task_entry|
         task_entry.ipBlocks.each do |ip_block_text|
@@ -28,9 +27,10 @@ module Cloudflare::Serialized
       options_scanner.timeout = timeout.unwrap
       options_scanner.quirks = quirks.unwrap
       options_scanner.caching = caching.unwrap
+      options_scanner.switcher = switcher.unwrap
 
+      options = Cloudflare::Options.new
       options.scanner = options_scanner
-      options.switcher = switcher.unwrap
 
       Cloudflare::Scanner.new tasks: unwrapped_tasks, options: options
     end
@@ -137,13 +137,8 @@ module Cloudflare::Serialized
       def unwrap : Cloudflare::Options::Scanner::Caching
         caching = Cloudflare::Options::Scanner::Caching.new
 
-        ip_address_capacity_per_block = ipAddressCapacityPerIpBlock
-        ip_address_capacity_per_block = 1_u8 if 1_u8 > ip_address_capacity_per_block
-        caching.ipAddressCapacityPerIpBlock = ip_address_capacity_per_block
-
-        clear_interval = clearInterval
-        clear_interval = 1_u8 if 1_u8 > clear_interval
-        caching.clearInterval = clear_interval.seconds
+        caching.ipAddressCapacityPerIpBlock = (0_u8 <= ipAddressCapacityPerIpBlock ? ipAddressCapacityPerIpBlock : 3_u8)
+        caching.clearInterval = (0_u8 < clearInterval ? clearInterval : 30_u8).seconds
 
         caching
       end
@@ -195,6 +190,23 @@ module Cloudflare::Serialized
       quirks.numberOfSleepPerRound = numberOfSleepPerRound.seconds
 
       quirks
+    end
+  end
+
+  struct Switcher
+    include YAML::Serializable
+
+    property addrinfoOverride : Bool
+
+    def initialize(@addrinfoOverride : Bool)
+    end
+
+    def unwrap : Cloudflare::Options::Scanner::Switcher
+      switcher = Cloudflare::Options::Scanner::Switcher.new
+
+      switcher.addrinfoOverride = addrinfoOverride
+
+      switcher
     end
   end
 end

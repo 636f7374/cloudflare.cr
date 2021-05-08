@@ -1,7 +1,6 @@
-require "yaml"
-require "json"
-
 module Cloudflare::Serialized
 end
 
+require "yaml"
+require "json"
 require "./frames/*"

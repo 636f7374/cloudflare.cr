@@ -1,24 +1,17 @@
 struct Cloudflare::Options
-  property switcher : Switcher
   property radar : Radar
   property scanner : Scanner
 
-  def initialize(@radar : Radar = Radar.new, @scanner : Scanner = Scanner.new, @switcher : Switcher = Switcher.new)
-  end
-
-  struct Switcher
-    property addrinfoOverride : Bool
-
-    def initialize(@addrinfoOverride : Bool = true)
-    end
+  def initialize(@radar : Radar = Radar.new, @scanner : Scanner = Scanner.new)
   end
 
   struct Scanner
     property caching : Caching
     property quirks : Quirks
+    property switcher : Switcher
     property timeout : TimeOut
 
-    def initialize(@caching : Caching = Caching.new, @quirks : Quirks = Quirks.new, @timeout : TimeOut = TimeOut.new)
+    def initialize(@caching : Caching = Caching.new, @quirks : Quirks = Quirks.new, @switcher : Switcher = Switcher.new, @timeout : TimeOut = TimeOut.new)
     end
 
     struct Caching
@@ -42,15 +35,16 @@ struct Cloudflare::Options
                      @numberOfSleepPerRequest : Time::Span = 1_u8.seconds, @numberOfSleepPerRound : Time::Span = 5_u8.seconds)
       end
     end
+
+    struct Switcher
+      property addrinfoOverride : Bool
+
+      def initialize(@addrinfoOverride : Bool = true)
+      end
+    end
   end
 
   struct Radar
-    enum ScanIpAddressType : UInt8
-      Ipv4Only = 0_u8
-      Ipv6Only = 1_u8
-      Both     = 2_u8
-    end
-
     property concurrentCount : Int32
     property scanIpAddressType : ScanIpAddressType
     property numberOfScansPerIpBlock : Int32

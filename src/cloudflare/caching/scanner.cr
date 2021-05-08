@@ -16,7 +16,7 @@ module Cloudflare::Caching
     end
 
     private def need_cleared? : Bool
-      interval = Time.local - (@mutex.synchronize { latestCleanedUp })
+      interval = Time.local - (@mutex.synchronize { latestCleanedUp.dup })
       interval > options.scanner.caching.clearInterval
     end
 
