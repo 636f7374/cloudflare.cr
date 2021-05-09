@@ -1,20 +1,19 @@
 class Cloudflare::Scanner
-  getter tasks : Set(Task::Entry)
   getter caching : Caching::Scanner
   getter options : Options
   getter terminated : Bool
   getter running : Bool
   getter mutex : Mutex
 
-  def initialize(@tasks : Set(Task::Entry), @caching : Caching::Scanner, @options : Options)
+  def initialize(@caching : Caching::Scanner, @options : Options)
     @terminated = false
     @running = false
     @mutex = Mutex.new :unchecked
   end
 
-  def self.new(tasks : Set(Task::Entry), options : Options)
+  def self.new(options : Options)
     caching = Cloudflare::Caching::Scanner.new options: options
-    new tasks: tasks, caching: caching, options: options
+    new caching: caching, options: options
   end
 
   def caching_to_tuple_ip_addresses : Array(Tuple(Needles::IATA, Socket::IPAddress))
@@ -25,7 +24,7 @@ class Cloudflare::Scanner
     @mutex.synchronize { @terminated = true }
   end
 
-  def perform
+  def perform(tasks : Set(Task::Entry))
     raise Exception.new "Scanner.perform: Scanner is already running!" if @mutex.synchronize { running.dup }
     raise Exception.new "Scanner.perform: Scanner has terminated!" if @mutex.synchronize { terminated.dup }
     @mutex.synchronize { @running = true }

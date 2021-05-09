@@ -11,9 +11,8 @@ module Cloudflare::Serialized
     def initialize(@tasks : Array(Task::Block) = [] of Task::Block, @caching : Caching = Caching.new, @quirks : Quirks = Quirks.new, @timeout : TimeOut = TimeOut.new, @switcher : Switcher = Switcher.new)
     end
 
-    def unwrap : Cloudflare::Scanner
+    def unwrap : Tuple(Set(Cloudflare::Scanner::Task::Entry), Cloudflare::Scanner)
       unwrapped_tasks = Set(Cloudflare::Scanner::Task::Entry).new
-      options_scanner = Cloudflare::Options::Scanner.new
 
       tasks.each do |task_entry|
         task_entry.ipBlocks.each do |ip_block_text|
@@ -24,6 +23,8 @@ module Cloudflare::Serialized
         end
       end
 
+      options_scanner = Cloudflare::Options::Scanner.new
+
       options_scanner.timeout = timeout.unwrap
       options_scanner.quirks = quirks.unwrap
       options_scanner.caching = caching.unwrap
@@ -32,7 +33,7 @@ module Cloudflare::Serialized
       options = Cloudflare::Options.new
       options.scanner = options_scanner
 
-      Cloudflare::Scanner.new tasks: unwrapped_tasks, options: options
+      Tuple.new unwrapped_tasks, Cloudflare::Scanner.new options: options
     end
 
     struct Entry
@@ -198,15 +199,11 @@ module Cloudflare::Serialized
 
     property addrinfoOverride : Bool
 
-    def initialize(@addrinfoOverride : Bool)
+    def initialize(@addrinfoOverride : Bool = true)
     end
 
     def unwrap : Cloudflare::Options::Scanner::Switcher
-      switcher = Cloudflare::Options::Scanner::Switcher.new
-
-      switcher.addrinfoOverride = addrinfoOverride
-
-      switcher
+      Cloudflare::Options::Scanner::Switcher.new addrinfoOverride: addrinfoOverride
     end
   end
 end

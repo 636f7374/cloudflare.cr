@@ -48,10 +48,10 @@ timeout:
   connect: 2)
 
 serialized = Cloudflare::Serialized::Scanner.from_yaml text
-scanner = serialized.unwrap
+tasks, scanner = serialized.unwrap
 
 spawn do
-  scanner.perform
+  scanner.perform tasks: tasks
 end
 
 loop do
