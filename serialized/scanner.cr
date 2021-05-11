@@ -2,13 +2,14 @@ module Cloudflare::Serialized
   struct Scanner
     include YAML::Serializable
 
+    property endpoint : Endpoint
     property tasks : Array(Entry)
     property caching : Caching
     property quirks : Quirks
     property timeout : TimeOut
     property switcher : Switcher
 
-    def initialize(@tasks : Array(Task::Block) = [] of Task::Block, @caching : Caching = Caching.new, @quirks : Quirks = Quirks.new, @timeout : TimeOut = TimeOut.new, @switcher : Switcher = Switcher.new)
+    def initialize(@endpoint : Endpoint, @tasks : Array(Task::Block) = [] of Task::Block, @caching : Caching = Caching.new, @quirks : Quirks = Quirks.new, @timeout : TimeOut = TimeOut.new, @switcher : Switcher = Switcher.new)
     end
 
     def unwrap : Tuple(Set(Cloudflare::Scanner::Task::Entry), Cloudflare::Scanner)
@@ -33,7 +34,7 @@ module Cloudflare::Serialized
       options = Cloudflare::Options.new
       options.scanner = options_scanner
 
-      Tuple.new unwrapped_tasks, Cloudflare::Scanner.new options: options
+      Tuple.new unwrapped_tasks, Cloudflare::Scanner.new endpoint: endpoint.unwrap, options: options
     end
 
     struct Entry

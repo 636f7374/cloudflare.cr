@@ -1,10 +1,11 @@
 class Cloudflare::Radar
+  getter endpoint : Endpoint
   getter options : Options
   getter storage : Storage
   getter numberOfTasks : Atomic(UInt64)
   getter numberOfTasksCompleted : Atomic(UInt64)
 
-  def initialize(@options : Options = Options.new)
+  def initialize(@endpoint : Endpoint, @options : Options = Options.new)
     @storage = Storage.new
     @numberOfTasks = Atomic.new 0_u64
     @numberOfTasksCompleted = Atomic.new 0_u64
@@ -60,7 +61,7 @@ class Cloudflare::Radar
 
         task_fiber = spawn do
           task = Task.new ipBlock: ip_blocks_iterator_next, storage: storage, options: options
-          task.perform
+          task.perform endpoint: endpoint
         end
 
         concurrent_mutex.synchronize { concurrent_fibers << task_fiber }

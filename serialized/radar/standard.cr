@@ -3,6 +3,7 @@ module Cloudflare::Serialized
     struct Standard
       include YAML::Serializable
 
+      property endpoint : Endpoint
       property parallel : Parallel?
       property concurrentCount : Int32
       property scanIpAddressType : ScanIpAddressType
@@ -13,7 +14,7 @@ module Cloudflare::Serialized
       property timeout : TimeOut
       property outputPath : String?
 
-      def initialize
+      def initialize(@endpoint : Endpoint)
         @parallel = nil
         @concurrentCount = 220_i32
         @scanIpAddressType = ScanIpAddressType::Ipv4Only
@@ -64,7 +65,7 @@ module Cloudflare::Serialized
         options = Cloudflare::Options.new
         options.radar = radar
 
-        Cloudflare::Radar.new options: options
+        Cloudflare::Radar.new endpoint: endpoint.unwrap, options: options
       end
 
       struct Parallel

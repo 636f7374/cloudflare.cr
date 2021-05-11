@@ -40,6 +40,17 @@ quirks:
   skipRange:
     - 1
     - 2
+endpoint:
+  port: 80
+  method: GET
+  path: /__down?bytes=64
+  headers:
+    - User-Agent: "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/534.50 (KHTML, like Gecko) Version/5.1 Safari/534.50"
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+      Accept-Language: "en-US,en;q=0.5"
+      Connection: "keep-alive"
+      Host: "speed.cloudflare.com:80"
+      Upgrade-Insecure-Requests: "1"
 switcher:
   addrinfoOverride: true
 timeout:

@@ -7,7 +7,7 @@ class Cloudflare::Scanner
     def initialize(@entry : Entry, @caching : Caching::Scanner, @options : Options)
     end
 
-    def perform(method : String = "HEAD", port : Int32 = 80_i32) : Bool
+    def perform(endpoint : Endpoint) : Bool
       failure_times = Atomic(Int32).new 0_i32
       skip_count = Atomic(Int32).new 0_i32
       each_times = Atomic(Int32).new 0_i32
@@ -17,7 +17,7 @@ class Cloudflare::Scanner
         break if each_times.get == options.scanner.quirks.numberOfScansPerIpBlock
         next skip_count.sub 1_i32 unless skip_count.get.zero?
         skip_count.set options.scanner.quirks.skipRange.sample
-        _ip_address = Socket::IPAddress.new address: ip_address.address, port: port
+        _ip_address = Socket::IPAddress.new address: ip_address.address, port: endpoint.port.to_i32
 
         begin
           socket = TCPSocket.new ip_address: _ip_address, connect_timeout: options.scanner.timeout.connect
@@ -30,10 +30,11 @@ class Cloudflare::Scanner
         end
 
         begin
-          http_request = HTTP::Request.new method: method, resource: "/"
-          http_request.headers["Host"] = String.build { |io| io << ip_address.address << ':' << port }
-          http_request.to_io socket
-          http_response = HTTP::Client::Response.from_io socket
+          request = HTTP::Request.new method: endpoint.method, resource: endpoint.resource, headers: endpoint.headers, body: endpoint.dataRaw
+          request.headers["Host"] = request.headers["Host"]? || String.build { |io| io << ip_address.address << ':' << endpoint.port }
+          request.to_io io: socket
+
+          response = HTTP::Client::Response.from_io io: socket, ignore_body: true
         rescue
           socket.close rescue nil
           failure_times.add 1_i32
@@ -42,7 +43,7 @@ class Cloudflare::Scanner
         end
 
         socket.close rescue nil
-        next failure_times.add 1_i32 unless value = http_response.headers["CF-RAY"]?
+        next failure_times.add 1_i32 unless value = response.headers["CF-RAY"]?
 
         ray_id, delimiter, iata_text = value.rpartition '-'
         next failure_times.add 1_i32 unless iata = Needles::IATA.parse? iata_text

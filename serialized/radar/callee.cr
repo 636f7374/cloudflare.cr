@@ -3,6 +3,7 @@ module Cloudflare::Serialized
     struct Callee
       include YAML::Serializable
 
+      property endpoint : Endpoint
       property concurrentCount : Int32
       property numberOfScansPerIpBlock : Int32
       property maximumNumberOfFailuresPerIpBlock : Int32
@@ -11,7 +12,7 @@ module Cloudflare::Serialized
       property timeout : TimeOut
       property ipBlocks : Array(String)
 
-      def initialize
+      def initialize(@endpoint : Endpoint)
         @concurrentCount = 220_i32
         @numberOfScansPerIpBlock = 25_i32
         @maximumNumberOfFailuresPerIpBlock = 15_i32
@@ -54,7 +55,7 @@ module Cloudflare::Serialized
         options = Cloudflare::Options.new
         options.radar = radar
 
-        Cloudflare::Radar.new options: options
+        Cloudflare::Radar.new endpoint: endpoint.unwrap, options: options
       end
     end
   end

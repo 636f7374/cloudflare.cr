@@ -10,4 +10,9 @@ module Cloudflare
     SubProcess  = 1_u8
     Hybrid      = 2_u8
   end
+
+  enum BindFlag : UInt8
+    TCP = 0_u8
+    TLS = 1_u8
+  end
 end

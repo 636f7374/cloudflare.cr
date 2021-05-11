@@ -187,7 +187,7 @@ module Cloudflare::CommandLine
 
     ip_blocks.each_slice per_callee_ip_blocks_count do |slice_ip_blocks|
       next if slice_ip_blocks.empty?
-      serialized_callee = Serialized::Radar::Callee.new
+      serialized_callee = Serialized::Radar::Callee.new endpoint: serialized_redar.endpoint
 
       serialized_callee.concurrentCount = serialized_redar.concurrentCount
       serialized_callee.numberOfScansPerIpBlock = serialized_redar.numberOfScansPerIpBlock
