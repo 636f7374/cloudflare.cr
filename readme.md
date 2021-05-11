@@ -51,6 +51,17 @@ excludes:
   - - SanJose_UnitedStates
   - - LosAngeles_UnitedStates
     - SanJose_UnitedStates
+endpoint:
+  port: 80
+  method: GET
+  path: /__down?bytes=64
+  headers:
+    - User-Agent: "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/534.50 (KHTML, like Gecko) Version/5.1 Safari/534.50"
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+      Accept-Language: "en-US,en;q=0.5"
+      Connection: "keep-alive"
+      Host: "speed.cloudflare.com:80"
+      Upgrade-Insecure-Requests: "1"
 timeout:
   read: 2
   write: 2
@@ -74,6 +85,17 @@ excludes:
   - - SanJose_UnitedStates
   - - LosAngeles_UnitedStates
     - SanJose_UnitedStates
+endpoint:
+  port: 80
+  method: GET
+  path: /__down?bytes=64
+  headers:
+    - User-Agent: "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/534.50 (KHTML, like Gecko) Version/5.1 Safari/534.50"
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+      Accept-Language: "en-US,en;q=0.5"
+      Connection: "keep-alive"
+      Host: "speed.cloudflare.com:80"
+      Upgrade-Insecure-Requests: "1"
 parallel:
   executableName: cloudflare
   calleeCount: 4
@@ -88,58 +110,18 @@ timeout:
 * Radar Configuration File (Concurrent + Distributed Parallel).
 
 ```yaml
----
-outputPath: $HOME/output.yml
-concurrentCount: 230
-scanIpAddressType: ipv4_only
-numberOfScansPerIpBlock: 50
-maximumNumberOfFailuresPerIpBlock: 15
-skipRange:
-  - 2
-  - 4
-excludes:
-  - - LosAngeles_UnitedStates
-  - - SanJose_UnitedStates
-  - - LosAngeles_UnitedStates
-    - SanJose_UnitedStates
 parallel:
-  executableName: cloudflare
   calleeCount: 4
-  listenAddress: tcp://0.0.0.0:4832
   type: distributed
-timeout:
-  read: 2
-  write: 2
-  connect: 2
 ```
 
 * Radar Configuration File (Concurrent + Hybrid (SubProcess & Distributed) Parallel).
 
 ```yaml
----
-outputPath: $HOME/output.yml
-concurrentCount: 230
-scanIpAddressType: ipv4_only
-numberOfScansPerIpBlock: 50
-maximumNumberOfFailuresPerIpBlock: 15
-skipRange:
-  - 2
-  - 4
-excludes:
-  - - LosAngeles_UnitedStates
-  - - SanJose_UnitedStates
-  - - LosAngeles_UnitedStates
-    - SanJose_UnitedStates
 parallel:
-  executableName: cloudflare
   calleeCount: 4
   subProcessCalleeCount: 2
-  listenAddress: tcp://0.0.0.0:4832
   type: hybrid
-timeout:
-  read: 2
-  write: 2
-  connect: 2
 ```
 
 ### Used as Shard
