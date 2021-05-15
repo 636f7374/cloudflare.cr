@@ -25,9 +25,9 @@ jobs:
     - name: Deploy - Create Directory
       run: mkdir -p bin/linux
     - name: Deploy - Cloudflare.cr Build
-      run: crystal build cli.cr -s --release --no-debug -o bin/linux/radar
+      run: crystal build cli.cr -s --release --no-debug -o bin/linux/cloudflare
     - name: Deploy - Create Archive
-      run: tar -cvzf Cloudflare_Linux.tar.gz bin/linux/radar
+      run: tar -cvzf Cloudflare_Linux.tar.gz bin/linux/cloudflare
     - name: Actions - Upload Release
       id: upload-release-asset 
       uses: actions/upload-release-asset@v1
@@ -60,9 +60,9 @@ jobs:
     - name: Deploy - Create Directory
       run: mkdir -p bin/darwin
     - name: Deploy - Cloudflare.cr Build
-      run: crystal build cli.cr -s --no-debug -o bin/darwin/radar
+      run: crystal build cli.cr -s --no-debug -o bin/darwin/cloudflare
     - name: Deploy - Create Archive
-      run: tar -cvzf Cloudflare_macOS.tar.gz bin/darwin/radar
+      run: tar -cvzf Cloudflare_macOS.tar.gz bin/darwin/cloudflare
     - name: Actions - Upload Release
       id: upload-release-asset 
       uses: actions/upload-release-asset@v1
