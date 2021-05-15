@@ -24,13 +24,13 @@ module Cloudflare::Caching
       return false unless need_cleared?
 
       @mutex.synchronize do
-        time_local = Time.local
+        starting_time = Time.local
 
         entries.each do |ip_block, entry_set|
           temporary_set = Set(Entry).new
 
           entry_set.each do |entry|
-            next if (time_local - entry.createdAt) > options.scanner.caching.clearInterval
+            next if (starting_time - entry.createdAt) > options.scanner.caching.clearInterval
             temporary_set << entry
           end
 
