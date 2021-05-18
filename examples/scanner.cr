@@ -49,7 +49,7 @@ endpoint:
       Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
       Accept-Language: "en-US,en;q=0.5"
       Connection: "keep-alive"
-      Host: "speed.cloudflare.com:80"
+      Host: "speed.cloudflare.com:$PORT"
       Upgrade-Insecure-Requests: "1"
 switcher:
   addrinfoOverride: true

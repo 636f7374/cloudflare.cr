@@ -12,7 +12,7 @@ class DNS::Resolver
     # This function is used as an overridable.
     # E.g. Cloudflare.
 
-    fetch_type, ip_addresses = addrinfo_tuple = getaddrinfo! host: host, port: port, answer_safety_first: answer_safety_first
+    fetch_type, ip_addresses = addrinfo_tuple = __getaddrinfo host: host, port: port, answer_safety_first: answer_safety_first
     _cloudflare = cloudflare
 
     if _cloudflare && addrinfo_override

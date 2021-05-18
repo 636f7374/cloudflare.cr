@@ -32,6 +32,7 @@ class Cloudflare::Radar
         begin
           request = HTTP::Request.new method: endpoint.method, resource: endpoint.resource, headers: endpoint.headers, body: endpoint.dataRaw
           request.headers["Host"] = request.headers["Host"]? || String.build { |io| io << ip_address.address << ':' << endpoint.port }
+          request.headers["Host"] = request.headers["Host"].gsub "$PORT", endpoint.port
           request.to_io io: socket
 
           response = HTTP::Client::Response.from_io io: socket, ignore_body: true
