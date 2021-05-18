@@ -1,5 +1,5 @@
-class Cloudflare::Radar
-  class Storage
+module Cloudflare::Caching
+  class Radar
     getter entries : Hash(String, Entry)
     getter mutex : Mutex
 

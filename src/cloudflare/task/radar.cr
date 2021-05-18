@@ -1,10 +1,10 @@
-class Cloudflare::Radar
-  struct Task
+module Cloudflare::Task
+  struct Radar
     getter ipBlock : IPAddress
-    getter storage : Storage
+    getter caching : Caching::Radar
     getter options : Options
 
-    def initialize(@ipBlock : IPAddress, @storage : Storage, @options : Options)
+    def initialize(@ipBlock : IPAddress, @caching : Caching::Radar, @options : Options)
     end
 
     def perform(endpoint : Endpoint) : Bool
@@ -16,6 +16,7 @@ class Cloudflare::Radar
         break if failure_times.get == options.radar.maximumNumberOfFailuresPerIpBlock
         break if each_times.get == options.radar.numberOfScansPerIpBlock
         next skip_count.sub 1_i32 unless skip_count.get.zero?
+
         skip_count.set options.radar.skipRange.sample
         _ip_address = Socket::IPAddress.new address: ip_address.address, port: endpoint.port.to_i32
 
@@ -51,7 +52,7 @@ class Cloudflare::Radar
         next failure_times.add 1_i32 unless edge = iata.to_edge?
 
         each_times.add 1_i32
-        storage.set ip_block: ipBlock, edge: edge
+        caching.set ip_block: ipBlock, edge: edge
       end
 
       true

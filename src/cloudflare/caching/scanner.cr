@@ -97,7 +97,7 @@ module Cloudflare::Caching
         entry_set.each { |entry| list << Tuple.new entry.priority, entry.iata, entry.ipAddress }
       end
 
-      list = list.sort { |a, b| a.first <=> b.first }
+      list = list.sort { |x, y| x.first <=> y.first }
 
       list.map do |item|
         priority, iata, ip_address = item

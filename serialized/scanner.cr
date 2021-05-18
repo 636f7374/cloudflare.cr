@@ -9,18 +9,18 @@ module Cloudflare::Serialized
     property timeout : TimeOut
     property switcher : Switcher
 
-    def initialize(@endpoint : Endpoint, @tasks : Array(Task::Block) = [] of Task::Block, @caching : Caching = Caching.new, @quirks : Quirks = Quirks.new, @timeout : TimeOut = TimeOut.new, @switcher : Switcher = Switcher.new)
+    def initialize(@endpoint : Endpoint, @tasks : Array(Entry) = [] of Entry, @caching : Caching = Caching.new, @quirks : Quirks = Quirks.new, @timeout : TimeOut = TimeOut.new, @switcher : Switcher = Switcher.new)
     end
 
-    def unwrap : Tuple(Set(Cloudflare::Scanner::Task::Entry), Cloudflare::Scanner)
-      unwrapped_tasks = Set(Cloudflare::Scanner::Task::Entry).new
+    def unwrap : Tuple(Set(Cloudflare::Task::Scanner::Entry), Cloudflare::Scanner)
+      unwrapped_tasks = Set(Cloudflare::Task::Scanner::Entry).new
 
       tasks.each do |task_entry|
         task_entry.ipBlocks.each do |ip_block_text|
           ip_block = IPAddress.new addr: ip_block_text rescue nil
           next unless ip_block
 
-          unwrapped_tasks << Cloudflare::Scanner::Task::Entry.new ipBlock: ip_block, expects: task_entry.get_options_expects
+          unwrapped_tasks << Cloudflare::Task::Scanner::Entry.new ipBlock: ip_block, expects: task_entry.get_options_expects
         end
       end
 
@@ -47,27 +47,27 @@ module Cloudflare::Serialized
       def initialize(@ipBlocks : Array(String) = [] of String, @expects : Array(Expect) = [] of Expect, @excludes : Array(Expect)? = [] of Expect)
       end
 
-      private def unwrap_expects : Array(Cloudflare::Scanner::Task::Entry::Expect)
-        _expects = [] of Cloudflare::Scanner::Task::Entry::Expect
+      private def unwrap_expects : Array(Cloudflare::Task::Scanner::Entry::Expect)
+        _expects = [] of Cloudflare::Task::Scanner::Entry::Expect
 
         expects.each do |expect|
           case expect.type
           in .iata?
             next unless iata = Cloudflare::Needles::IATA.parse? expect.name
 
-            _expect = Cloudflare::Scanner::Task::Entry::Expect.new iata: iata, priority: (expect.priority || 10_u8)
+            _expect = Cloudflare::Task::Scanner::Entry::Expect.new iata: iata, priority: (expect.priority || 10_u8)
             _expects << _expect
           in .edge?
             next unless edge = Cloudflare::Needles::Edge.parse? expect.name
             next unless iata = edge.to_iata?
 
-            _expect = Cloudflare::Scanner::Task::Entry::Expect.new iata: iata, priority: (expect.priority || 10_u8)
+            _expect = Cloudflare::Task::Scanner::Entry::Expect.new iata: iata, priority: (expect.priority || 10_u8)
             _expects << _expect
           in .region?
             next unless region = Cloudflare::Needles::Region.parse? expect.name
 
             region.each do |iata|
-              _expect = Cloudflare::Scanner::Task::Entry::Expect.new iata: iata, priority: (expect.priority || 10_u8)
+              _expect = Cloudflare::Task::Scanner::Entry::Expect.new iata: iata, priority: (expect.priority || 10_u8)
               _expects << _expect
             end
           end
@@ -76,27 +76,27 @@ module Cloudflare::Serialized
         _expects.uniq
       end
 
-      private def unwrap_excludes : Array(Cloudflare::Scanner::Task::Entry::Expect)
-        _excludes = [] of Cloudflare::Scanner::Task::Entry::Expect
+      private def unwrap_excludes : Array(Cloudflare::Task::Scanner::Entry::Expect)
+        _excludes = [] of Cloudflare::Task::Scanner::Entry::Expect
 
         excludes.try &.each do |exclude|
           case exclude.type
           in .iata?
             next unless iata = Cloudflare::Needles::IATA.parse? exclude.name
 
-            _exclude = Cloudflare::Scanner::Task::Entry::Expect.new iata: iata, priority: (exclude.priority || 10_u8)
+            _exclude = Cloudflare::Task::Scanner::Entry::Expect.new iata: iata, priority: (exclude.priority || 10_u8)
             _excludes << _exclude
           in .edge?
             next unless edge = Cloudflare::Needles::Edge.parse? exclude.name
             next unless iata = edge.to_iata?
 
-            _exclude = Cloudflare::Scanner::Task::Entry::Expect.new iata: iata, priority: (exclude.priority || 10_u8)
+            _exclude = Cloudflare::Task::Scanner::Entry::Expect.new iata: iata, priority: (exclude.priority || 10_u8)
             _excludes << _exclude
           in .region?
             next unless region = Cloudflare::Needles::Region.parse? exclude.name
 
             region.each do |iata|
-              _exclude = Cloudflare::Scanner::Task::Entry::Expect.new iata: iata, priority: (exclude.priority || 10_u8)
+              _exclude = Cloudflare::Task::Scanner::Entry::Expect.new iata: iata, priority: (exclude.priority || 10_u8)
               _excludes << _exclude
             end
           end
@@ -105,7 +105,7 @@ module Cloudflare::Serialized
         _excludes.uniq
       end
 
-      def get_options_expects : Array(Cloudflare::Scanner::Task::Entry::Expect)
+      def get_options_expects : Array(Cloudflare::Task::Scanner::Entry::Expect)
         _expects = unwrap_expects
         _excludes = unwrap_excludes
 

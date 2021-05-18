@@ -1,5 +1,5 @@
-class Cloudflare::Scanner
-  struct Task
+module Cloudflare::Task
+  struct Scanner
     getter entry : Entry
     getter caching : Caching::Scanner
     getter options : Options
@@ -16,6 +16,7 @@ class Cloudflare::Scanner
         break if failure_times.get == options.scanner.quirks.maximumNumberOfFailuresPerIpBlock
         break if each_times.get == options.scanner.quirks.numberOfScansPerIpBlock
         next skip_count.sub 1_i32 unless skip_count.get.zero?
+
         skip_count.set options.scanner.quirks.skipRange.sample
         _ip_address = Socket::IPAddress.new address: ip_address.address, port: endpoint.port.to_i32
 

@@ -148,7 +148,7 @@ module Cloudflare::CommandLine
     serialized_export = Serialized::Export.new
     serialized_export.startingTime = starting_time
 
-    radar.storage.each do |ip_block, entry|
+    radar.caching.each do |ip_block, entry|
       serialized_export_entry = Serialized::Export::Entry.new
       serialized_export_entry.ipBlock = ip_block
       entry.edges.each { |name, count| serialized_export_entry.edges[name.to_s] = count }

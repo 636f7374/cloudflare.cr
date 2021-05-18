@@ -1,12 +1,12 @@
 class Cloudflare::Radar
   getter endpoint : Endpoint
   getter options : Options
-  getter storage : Storage
+  getter caching : Caching::Radar
   getter numberOfTasks : Atomic(UInt64)
   getter numberOfTasksCompleted : Atomic(UInt64)
 
   def initialize(@endpoint : Endpoint, @options : Options = Options.new)
-    @storage = Storage.new
+    @caching = Caching::Radar.new
     @numberOfTasks = Atomic.new 0_u64
     @numberOfTasksCompleted = Atomic.new 0_u64
   end
@@ -15,8 +15,8 @@ class Cloudflare::Radar
     @options
   end
 
-  def storage : Storage
-    @storage
+  def caching : Caching::Radar
+    @caching
   end
 
   def number_of_tasks : UInt64
@@ -60,7 +60,7 @@ class Cloudflare::Radar
         break if ip_blocks_iterator_next.is_a? Iterator::Stop
 
         task_fiber = spawn do
-          task = Task.new ipBlock: ip_blocks_iterator_next, storage: storage, options: options
+          task = Task::Radar.new ipBlock: ip_blocks_iterator_next, caching: caching, options: options
           task.perform endpoint: endpoint
         end
 
@@ -84,7 +84,7 @@ class Cloudflare::Radar
 
       all_dead = concurrent_mutex.synchronize { concurrent_fibers.empty? }
       next sleep 0.25_f32.seconds unless all_dead
-      storage.exclude options: options
+      caching.exclude options: options
 
       break
     end
@@ -92,4 +92,5 @@ class Cloudflare::Radar
 end
 
 require "http/request"
-require "./radar/*"
+require "./task/*"
+require "./caching/*"
