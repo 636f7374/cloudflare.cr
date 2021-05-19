@@ -41,9 +41,9 @@ quirks:
     - 1
     - 2
 endpoint:
-  port: 80
   method: GET
   path: /__down?bytes=64
+  port: 80
   headers:
     - User-Agent: "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/534.50 (KHTML, like Gecko) Version/5.1 Safari/534.50"
       Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
@@ -54,15 +54,20 @@ endpoint:
 switcher:
   addrinfoOverride: true
 timeout:
-  read: 2
-  write: 2
-  connect: 2)
+  tcp:
+    read: 2
+    write: 2
+    connect: 2
+  tls:
+    read: 2
+    write: 2
+    connect: 2)
 
 serialized = Cloudflare::Serialized::Scanner.from_yaml text
-tasks, scanner = serialized.unwrap
+task_expects, scanner = serialized.unwrap
 
 spawn do
-  scanner.perform tasks: tasks
+  scanner.perform task_expects: task_expects
 end
 
 loop do

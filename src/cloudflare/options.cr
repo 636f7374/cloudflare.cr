@@ -45,26 +45,17 @@ struct Cloudflare::Options
   end
 
   struct Radar
-    property concurrentCount : Int32
-    property scanIpAddressType : ScanIpAddressType
-    property numberOfScansPerIpBlock : Int32
-    property maximumNumberOfFailuresPerIpBlock : Int32
-    property skipRange : Range(Int32, Int32)
+    property quirks : Quirks
     property excludes : Set(Set(Needles::Edge))
     property timeout : TimeOut
 
-    def initialize
-      @concurrentCount = 220_i32
-      @scanIpAddressType = ScanIpAddressType::Ipv4Only
-      @numberOfScansPerIpBlock = 25_i32
-      @maximumNumberOfFailuresPerIpBlock = 15_i32
-      @skipRange = (6_i32..12_i32)
+    def initialize(@quirks : Quirks = Quirks.new)
       @excludes = Set(Set(Needles::Edge)).new
       @timeout = TimeOut.new
     end
 
     def get_ip_blocks : Set(IPAddress::IPv4 | IPAddress::IPv6)
-      case scanIpAddressType
+      case quirks.scanIpAddressType
       in .ipv4_only?
         IpBlock::Ipv4
       in .ipv6_only?
@@ -80,6 +71,29 @@ struct Cloudflare::Options
 
     def get_prefix_24_ip_blocks : Set(IPAddress::IPv4 | IPAddress::IPv6)
       Cloudflare.unwrap_prefix_24 ip_blocks: get_ip_blocks
+    end
+
+    struct Quirks
+      property scanIpAddressType : ScanIpAddressType
+      property concurrentCount : Int32
+      property numberOfScansPerIpBlock : Int32
+      property maximumNumberOfFailuresPerIpBlock : Int32
+      property skipRange : Range(Int32, Int32)
+
+      def initialize(@scanIpAddressType : ScanIpAddressType = ScanIpAddressType::Ipv4Only)
+        @concurrentCount = 220_i32
+        @numberOfScansPerIpBlock = 25_i32
+        @maximumNumberOfFailuresPerIpBlock = 15_i32
+        @skipRange = (3_i32..6_i32)
+      end
+    end
+  end
+
+  struct TimeOut
+    property tcp : Cloudflare::TimeOut
+    property tls : Cloudflare::TimeOut
+
+    def initialize(@tcp : Cloudflare::TimeOut = Cloudflare::TimeOut.new, @tls : Cloudflare::TimeOut = Cloudflare::TimeOut.new)
     end
   end
 end

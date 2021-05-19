@@ -25,7 +25,7 @@ class Cloudflare::Scanner
     @mutex.synchronize { @terminated = true }
   end
 
-  def perform(tasks : Set(Task::Scanner::Entry))
+  def perform(task_expects : Set(Task::Scanner::Expect))
     raise Exception.new "Scanner.perform: Scanner is already running!" if @mutex.synchronize { running.dup }
     raise Exception.new "Scanner.perform: Scanner has terminated!" if @mutex.synchronize { terminated.dup }
     @mutex.synchronize { @running = true }
@@ -35,9 +35,9 @@ class Cloudflare::Scanner
       concurrent_fibers = Set(Fiber).new
       _terminated = false
 
-      tasks.each do |entry|
+      task_expects.each do |task_expect|
         task_fiber = spawn do
-          task = Task::Scanner.new entry: entry, caching: caching, options: options
+          task = Task::Scanner.new expect: task_expect, caching: caching, options: options
           task.perform endpoint: endpoint
         end
 

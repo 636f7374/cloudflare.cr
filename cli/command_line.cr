@@ -189,10 +189,10 @@ module Cloudflare::CommandLine
       next if slice_ip_blocks.empty?
       serialized_callee = Serialized::Radar::Callee.new endpoint: serialized_redar.endpoint
 
-      serialized_callee.concurrentCount = serialized_redar.concurrentCount
-      serialized_callee.numberOfScansPerIpBlock = serialized_redar.numberOfScansPerIpBlock
-      serialized_callee.maximumNumberOfFailuresPerIpBlock = serialized_redar.maximumNumberOfFailuresPerIpBlock
-      serialized_callee.skipRange = serialized_redar.skipRange
+      serialized_callee.quirks.concurrentCount = serialized_redar.quirks.concurrentCount
+      serialized_callee.quirks.numberOfScansPerIpBlock = serialized_redar.quirks.numberOfScansPerIpBlock
+      serialized_callee.quirks.maximumNumberOfFailuresPerIpBlock = serialized_redar.quirks.maximumNumberOfFailuresPerIpBlock
+      serialized_callee.quirks.skipRange = serialized_redar.quirks.skipRange
       serialized_callee.excludes = serialized_redar.excludes
       serialized_callee.timeout = serialized_redar.timeout
       serialized_callee.ipBlocks = slice_ip_blocks.map { |ip_blocks| String.build { |io| io << ip_blocks.address << '/' << ip_blocks.prefix } }

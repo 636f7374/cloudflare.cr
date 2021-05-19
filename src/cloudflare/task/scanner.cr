@@ -1,74 +1,54 @@
 module Cloudflare::Task
   struct Scanner
-    getter entry : Entry
+    getter expect : Expect
     getter caching : Caching::Scanner
     getter options : Options
 
-    def initialize(@entry : Entry, @caching : Caching::Scanner, @options : Options)
+    def initialize(@expect : Expect, @caching : Caching::Scanner, @options : Options)
     end
 
     def perform(endpoint : Endpoint) : Bool
-      failure_times = Atomic(Int32).new 0_i32
-      skip_count = Atomic(Int32).new 0_i32
-      each_times = Atomic(Int32).new 0_i32
+      failure_counter = Atomic(UInt64).new 0_u64
+      skip_counter = Atomic(UInt64).new 0_u64
+      each_counter = Atomic(UInt64).new 0_u64
 
-      entry.ipBlock.each do |ip_address|
-        break if failure_times.get == options.scanner.quirks.maximumNumberOfFailuresPerIpBlock
-        break if each_times.get == options.scanner.quirks.numberOfScansPerIpBlock
-        next skip_count.sub 1_i32 unless skip_count.get.zero?
+      expect.ipBlock.each do |ip_address|
+        break if failure_counter.get == options.scanner.quirks.maximumNumberOfFailuresPerIpBlock
+        break if each_counter.get == options.scanner.quirks.numberOfScansPerIpBlock
+        next skip_counter.sub 1_i32 unless skip_counter.get.zero?
 
-        skip_count.set options.scanner.quirks.skipRange.sample
+        skip_counter.set options.scanner.quirks.skipRange.sample.to_u64
         _ip_address = Socket::IPAddress.new address: ip_address.address, port: endpoint.port.to_i32
 
         begin
-          socket = TCPSocket.new ip_address: _ip_address, connect_timeout: options.scanner.timeout.connect
-          socket.read_timeout = options.scanner.timeout.read
-          socket.write_timeout = options.scanner.timeout.write
-        rescue
-          failure_times.add 1_i32
+          tuples = Cloudflare::Endpoint.check_radar_establish! ip_address: _ip_address, endpoint: endpoint, options: options
+
+          response, edge, connect_elapsed, establish_elapsed = tuples
+          raise Exception.new "Edge.to_iata? is Nil!" unless iata = edge.to_iata?
+          next unless entry = expect.entries.find { |expect| iata == expect.iata }
+
+          each_counter.add 1_u64
+        rescue ex
+          failure_counter.add 1_u64
 
           next
         end
 
-        begin
-          request = HTTP::Request.new method: endpoint.method, resource: endpoint.resource, headers: endpoint.headers, body: endpoint.dataRaw
-          request.headers["Host"] = request.headers["Host"]? || String.build { |io| io << ip_address.address << ':' << endpoint.port }
-          request.headers["Host"] = request.headers["Host"].gsub "$PORT", endpoint.port
-          request.to_io io: socket
-
-          response = HTTP::Client::Response.from_io io: socket, ignore_body: true
-        rescue
-          socket.close rescue nil
-          failure_times.add 1_i32
-
-          next
-        end
-
-        socket.close rescue nil
-        next failure_times.add 1_i32 unless value = response.headers["CF-RAY"]?
-
-        ray_id, delimiter, iata_text = value.rpartition '-'
-        next failure_times.add 1_i32 unless iata = Needles::IATA.parse? iata_text
-        next unless expect = entry.expects.find { |expect| iata == expect.iata }
-
-        each_times.add 1_i32
-        socket_ip_address = Socket::IPAddress.new address: ip_address.address, port: 0_i32
-        caching.set ip_block: entry.ipBlock, iata: iata, priority: expect.priority, ip_address: socket_ip_address
-
+        caching.set ip_block: expect.ipBlock, iata: iata, priority: entry.priority, ip_address: _ip_address
         sleep options.scanner.quirks.numberOfSleepPerRequest
       end
 
       true
     end
 
-    struct Entry
+    struct Expect
       property ipBlock : IPAddress
-      property expects : Array(Expect)
+      property entries : Set(Entry)
 
-      def initialize(@ipBlock : IPAddress, @expects : Array(Expect) = [] of Expect)
+      def initialize(@ipBlock : IPAddress, @entries : Set(Entry) = [] of Entry)
       end
 
-      struct Expect
+      struct Entry
         property iata : Needles::IATA
         property priority : UInt8
 

@@ -52,4 +52,41 @@ module Cloudflare
       break list
     end
   end
+
+  def self.attempt_create_tcp_socket!(ip_address : Socket::IPAddress, timeout : TimeOut) : Tuple(TCPSocket, Time::Span)
+    starting_time = Time.local
+
+    socket = TCPSocket.new ip_address: ip_address, connect_timeout: timeout.connect
+    socket.read_timeout = timeout.read
+    socket.write_timeout = timeout.write
+
+    Tuple.new socket, (Time.local - starting_time)
+  end
+
+  def self.upgrade_tls_socket!(socket : TCPSocket, tls : TransportLayerSecurity, timeout : TimeOut) : Tuple(OpenSSL::SSL::Context::Client, OpenSSL::SSL::Socket::Client)
+    begin
+      tls_context = tls.unwrap
+    rescue ex
+      socket.close rescue nil
+
+      raise ex
+    end
+
+    socket.read_timeout = timeout.read
+    socket.write_timeout = timeout.write
+
+    begin
+      tls_socket = OpenSSL::SSL::Socket::Client.new io: socket, context: tls_context, sync_close: true, hostname: (tls.hostname.empty? ? nil : tls.hostname)
+      tls_socket.sync = true
+    rescue ex
+      socket.close rescue nil
+
+      tls_context.skip_finalize = true
+      tls_context.free
+
+      raise ex
+    end
+
+    Tuple.new tls_context, tls_socket
+  end
 end

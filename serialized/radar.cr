@@ -3,4 +3,5 @@ module Cloudflare::Serialized
   end
 end
 
+require "./options/*"
 require "./radar/*"

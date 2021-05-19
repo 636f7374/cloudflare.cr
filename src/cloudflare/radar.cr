@@ -50,7 +50,7 @@ class Cloudflare::Radar
 
     main_concurrent_fiber = spawn do
       loop do
-        if concurrent_mutex.synchronize { concurrent_fibers.size == options.radar.concurrentCount }
+        if concurrent_mutex.synchronize { concurrent_fibers.size == options.radar.quirks.concurrentCount }
           sleep 0.25_f32.seconds
 
           next

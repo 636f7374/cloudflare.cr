@@ -3,24 +3,24 @@ module Cloudflare::Serialized
     include YAML::Serializable
 
     property endpoint : Endpoint
-    property tasks : Array(Entry)
+    property tasks : Array(Task)
     property caching : Caching
     property quirks : Quirks
-    property timeout : TimeOut
+    property timeout : Serialized::Options::TimeOut
     property switcher : Switcher
 
-    def initialize(@endpoint : Endpoint, @tasks : Array(Entry) = [] of Entry, @caching : Caching = Caching.new, @quirks : Quirks = Quirks.new, @timeout : TimeOut = TimeOut.new, @switcher : Switcher = Switcher.new)
+    def initialize(@endpoint : Endpoint, @tasks : Array(Task) = [] of Task, @caching : Caching = Caching.new, @quirks : Quirks = Quirks.new, @timeout : Serialized::Options::TimeOut = Serialized::Options::TimeOut.new, @switcher : Switcher = Switcher.new)
     end
 
-    def unwrap : Tuple(Set(Cloudflare::Task::Scanner::Entry), Cloudflare::Scanner)
-      unwrapped_tasks = Set(Cloudflare::Task::Scanner::Entry).new
+    def unwrap : Tuple(Set(Cloudflare::Task::Scanner::Expect), Cloudflare::Scanner)
+      unwrapped_tasks = Set(Cloudflare::Task::Scanner::Expect).new
 
-      tasks.each do |task_entry|
-        task_entry.ipBlocks.each do |ip_block_text|
+      tasks.each do |task|
+        task.ipBlocks.each do |ip_block_text|
           ip_block = IPAddress.new addr: ip_block_text rescue nil
           next unless ip_block
 
-          unwrapped_tasks << Cloudflare::Task::Scanner::Entry.new ipBlock: ip_block, expects: task_entry.get_options_expects
+          unwrapped_tasks << Cloudflare::Task::Scanner::Expect.new ipBlock: ip_block, entries: task.get_excluded_expects
         end
       end
 
@@ -37,7 +37,7 @@ module Cloudflare::Serialized
       Tuple.new unwrapped_tasks, Cloudflare::Scanner.new endpoint: endpoint.unwrap, options: options
     end
 
-    struct Entry
+    struct Task
       include YAML::Serializable
 
       property ipBlocks : Array(String)
@@ -47,70 +47,43 @@ module Cloudflare::Serialized
       def initialize(@ipBlocks : Array(String) = [] of String, @expects : Array(Expect) = [] of Expect, @excludes : Array(Expect)? = [] of Expect)
       end
 
-      private def unwrap_expects : Array(Cloudflare::Task::Scanner::Entry::Expect)
-        _expects = [] of Cloudflare::Task::Scanner::Entry::Expect
+      {% for name in ["expects", "excludes"] %}
+      private def unwrap_{{name.id}} : Array(Cloudflare::Task::Scanner::Expect::Entry)
+        _{{name.id}} = [] of Cloudflare::Task::Scanner::Expect::Entry
 
-        expects.each do |expect|
-          case expect.type
+        {{name.id}}.try &.each do |entry|
+          case entry.type
           in .iata?
-            next unless iata = Cloudflare::Needles::IATA.parse? expect.name
+            next unless iata = Cloudflare::Needles::IATA.parse? entry.name
 
-            _expect = Cloudflare::Task::Scanner::Entry::Expect.new iata: iata, priority: (expect.priority || 10_u8)
-            _expects << _expect
+            _unwrapped_entry = Cloudflare::Task::Scanner::Expect::Entry.new iata: iata, priority: (entry.priority || 10_u8)
+            _{{name.id}} << _unwrapped_entry
           in .edge?
-            next unless edge = Cloudflare::Needles::Edge.parse? expect.name
+            next unless edge = Cloudflare::Needles::Edge.parse? entry.name
             next unless iata = edge.to_iata?
 
-            _expect = Cloudflare::Task::Scanner::Entry::Expect.new iata: iata, priority: (expect.priority || 10_u8)
-            _expects << _expect
+            _unwrapped_entry = Cloudflare::Task::Scanner::Expect::Entry.new iata: iata, priority: (entry.priority || 10_u8)
+            _{{name.id}} << _unwrapped_entry
           in .region?
-            next unless region = Cloudflare::Needles::Region.parse? expect.name
+            next unless region = Cloudflare::Needles::Region.parse? entry.name
 
             region.each do |iata|
-              _expect = Cloudflare::Task::Scanner::Entry::Expect.new iata: iata, priority: (expect.priority || 10_u8)
-              _expects << _expect
+              _unwrapped_entry = Cloudflare::Task::Scanner::Expect::Entry.new iata: iata, priority: (entry.priority || 10_u8)
+              _{{name.id}} << _unwrapped_entry
             end
           end
         end
 
-        _expects.uniq
+        _{{name.id}}.uniq
       end
+      {% end %}
 
-      private def unwrap_excludes : Array(Cloudflare::Task::Scanner::Entry::Expect)
-        _excludes = [] of Cloudflare::Task::Scanner::Entry::Expect
-
-        excludes.try &.each do |exclude|
-          case exclude.type
-          in .iata?
-            next unless iata = Cloudflare::Needles::IATA.parse? exclude.name
-
-            _exclude = Cloudflare::Task::Scanner::Entry::Expect.new iata: iata, priority: (exclude.priority || 10_u8)
-            _excludes << _exclude
-          in .edge?
-            next unless edge = Cloudflare::Needles::Edge.parse? exclude.name
-            next unless iata = edge.to_iata?
-
-            _exclude = Cloudflare::Task::Scanner::Entry::Expect.new iata: iata, priority: (exclude.priority || 10_u8)
-            _excludes << _exclude
-          in .region?
-            next unless region = Cloudflare::Needles::Region.parse? exclude.name
-
-            region.each do |iata|
-              _exclude = Cloudflare::Task::Scanner::Entry::Expect.new iata: iata, priority: (exclude.priority || 10_u8)
-              _excludes << _exclude
-            end
-          end
-        end
-
-        _excludes.uniq
-      end
-
-      def get_options_expects : Array(Cloudflare::Task::Scanner::Entry::Expect)
+      def get_excluded_expects : Set(Cloudflare::Task::Scanner::Expect::Entry)
         _expects = unwrap_expects
         _excludes = unwrap_excludes
 
-        _expects.reject! { |expect| _excludes.each { |exclude| break true if exclude.iata == expect.iata } }
-        _expects
+        _expects.reject! { |expect| _excludes.any? { |exclude| exclude.iata == expect.iata } }
+        _expects.to_set
       end
 
       struct Expect

@@ -719,9 +719,9 @@ module Cloudflare::IpBlock
 
     case _ip_address
     in IPAddress::IPv4
-      Ipv4.any? { |ip_block| ip_block.includes? _ip_address }
+      return true if Ipv4.any? { |ip_block| ip_block.includes? _ip_address }
     in IPAddress::IPv6
-      Ipv6.any? { |ip_block| ip_block.includes? _ip_address }
+      return true if Ipv6.any? { |ip_block| ip_block.includes? _ip_address }
     end
 
     false

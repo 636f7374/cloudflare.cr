@@ -39,29 +39,39 @@
 ```yaml
 ---
 outputPath: $HOME/output.yml
-concurrentCount: 230
-scanIpAddressType: ipv4_only
-numberOfScansPerIpBlock: 50
-maximumNumberOfFailuresPerIpBlock: 15
-skipRange:
-  - 2
-  - 4
+quirks:
+  concurrentCount: 230
+  scanIpAddressType: ipv4_only
+  numberOfScansPerIpBlock: 50
+  maximumNumberOfFailuresPerIpBlock: 15
+  skipRange:
+    - 2
+    - 4
 excludes:
   - - LosAngeles_UnitedStates
   - - SanJose_UnitedStates
   - - LosAngeles_UnitedStates
     - SanJose_UnitedStates
 endpoint:
-  port: 80
   method: GET
   path: /__down?bytes=64
+  port: 80
   headers:
     - User-Agent: "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/534.50 (KHTML, like Gecko) Version/5.1 Safari/534.50"
       Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
       Accept-Language: "en-US,en;q=0.5"
       Connection: "keep-alive"
-      Host: "speed.cloudflare.com:80"
+      Host: "speed.cloudflare.com:$PORT"
       Upgrade-Insecure-Requests: "1"
+  _tls:
+    hostname: speed.cloudflare.com
+    verifyMode: peer
+    options:
+      - no_ssl_v2
+      - no_ssl_v3
+      - no_tls_v1
+      - no_tls_v1_1
+      - no_tls_v1_2
 timeout:
   read: 2
   write: 2
@@ -73,29 +83,39 @@ timeout:
 ```yaml
 ---
 outputPath: $HOME/output.yml
-concurrentCount: 230
-scanIpAddressType: ipv4_only
-numberOfScansPerIpBlock: 50
-maximumNumberOfFailuresPerIpBlock: 15
-skipRange:
-  - 2
-  - 4
+quirks:
+  concurrentCount: 230
+  scanIpAddressType: ipv4_only
+  numberOfScansPerIpBlock: 50
+  maximumNumberOfFailuresPerIpBlock: 15
+  skipRange:
+    - 2
+    - 4
 excludes:
   - - LosAngeles_UnitedStates
   - - SanJose_UnitedStates
   - - LosAngeles_UnitedStates
     - SanJose_UnitedStates
 endpoint:
-  port: 80
   method: GET
   path: /__down?bytes=64
+  port: 80
   headers:
     - User-Agent: "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/534.50 (KHTML, like Gecko) Version/5.1 Safari/534.50"
       Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
       Accept-Language: "en-US,en;q=0.5"
       Connection: "keep-alive"
-      Host: "speed.cloudflare.com:80"
+      Host: "speed.cloudflare.com:$PORT"
       Upgrade-Insecure-Requests: "1"
+  _tls:
+    hostname: speed.cloudflare.com
+    verifyMode: peer
+    options:
+      - no_ssl_v2
+      - no_ssl_v3
+      - no_tls_v1
+      - no_tls_v1_1
+      - no_tls_v1_2
 parallel:
   executableName: cloudflare
   calleeCount: 4
