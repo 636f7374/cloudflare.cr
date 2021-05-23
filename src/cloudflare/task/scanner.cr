@@ -21,7 +21,7 @@ module Cloudflare::Task
         _ip_address = Socket::IPAddress.new address: ip_address.address, port: endpoint.port.to_i32
 
         begin
-          tuples = Cloudflare::Endpoint.check_radar_establish! ip_address: _ip_address, endpoint: endpoint, options: options
+          tuples = Cloudflare::Endpoint.check_scanner_establish! ip_address: _ip_address, endpoint: endpoint, options: options
 
           response, edge, connect_elapsed, establish_elapsed = tuples
           raise Exception.new "Edge.to_iata? is Nil!" unless iata = edge.to_iata?
