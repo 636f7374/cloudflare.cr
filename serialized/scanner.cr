@@ -13,7 +13,7 @@ module Cloudflare::Serialized
     def initialize(@endpoint : Endpoint, @tasks : Array(Task) = [] of Task, @caching : Caching = Caching.new, @quirks : Quirks = Quirks.new, @dns : DNS = DNS.new, @timeout : Serialized::Options::TimeOut = Serialized::Options::TimeOut.new, @attempt : Serialized::Options::Attempt = Serialized::Options::Attempt.new)
     end
 
-    def unwrap(dns_resolver : ::DNS::Resolver) : Tuple(Set(Cloudflare::Task::Scanner::Expect), Cloudflare::Scanner)
+    def unwrap : Tuple(Set(Cloudflare::Task::Scanner::Expect), Cloudflare::Scanner)
       unwrapped_tasks = Set(Cloudflare::Task::Scanner::Expect).new
 
       tasks.each do |task|
@@ -34,7 +34,6 @@ module Cloudflare::Serialized
 
       options = Cloudflare::Options.new
       options.scanner = options_scanner
-      options.dns = dns.unwrap dns_options: dns_resolver.options
 
       Tuple.new unwrapped_tasks, Cloudflare::Scanner.new endpoint: endpoint.unwrap, options: options
     end
@@ -174,16 +173,12 @@ module Cloudflare::Serialized
       include YAML::Serializable
 
       property addrinfoOverride : Bool
-      property socket : ::DNS::Serialized::Options::Standard::Socket
 
-      def initialize(@addrinfoOverride : Bool = true, @socket : ::DNS::Serialized::Options::Standard::Socket = ::DNS::Serialized::Options::Standard::Socket.new)
+      def initialize(@addrinfoOverride : Bool = true)
       end
 
-      def unwrap(dns_options : ::DNS::Options) : ::DNS::Options
-        _dns_options = dns_options.dup
-        _dns_options.socket = socket.unwrap
-
-        _dns_options
+      def unwrap(dns_options : ::DNS::Options) : Nil
+        nil
       end
     end
   end
