@@ -72,6 +72,8 @@ endpoint:
       - no_tls_v1
       - no_tls_v1_1
       - no_tls_v1_2
+attempt:
+  connect: 1
 timeout:
   read: 2
   write: 2
@@ -121,6 +123,8 @@ parallel:
   calleeCount: 4
   listenAddress: tcp://0.0.0.0:4832
   type: sub_process
+attempt:
+  connect: 1
 timeout:
   read: 2
   write: 2

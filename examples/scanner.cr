@@ -65,7 +65,9 @@ timeout:
   tls:
     read: 2
     write: 2
-    connect: 2)
+    connect: 2
+attempt:
+  connect: 1)
 
 serialized = Cloudflare::Serialized::Scanner.from_yaml text
 task_expects, scanner = serialized.unwrap
