@@ -31,7 +31,7 @@ abstract struct Cloudflare::Endpoint
       raise Exception.new String.build { |io| io << "Cloudflare::Endpoint.check_" << {{function_type.id.stringify}}  << "_establish!: The endpoint type is not TCP or TLS!" }
     end
 
-    socket, connect_elapsed = Cloudflare.attempt_create_tcp_socket! ip_address: ip_address, timeout: options.{{function_type.id}}.timeout.tcp
+    socket, connect_elapsed = Cloudflare.attempt_create_tcp_socket! ip_address: ip_address, attempt_times: options.{{function_type.id}}.attempt.connect, timeout: options.{{function_type.id}}.timeout.tcp
     starting_time = Time.local
 
     request = HTTP::Request.new method: endpoint.method, resource: endpoint.resource, headers: endpoint.headers, body: endpoint.dataRaw

@@ -8,11 +8,11 @@ class DNS::Resolver
   end
 
   def __getaddrinfo_cloudflare(host : String, port : Int32 = 0_i32, answer_safety_first : Bool = options.addrinfo.answerSafetyFirst,
-                               addrinfo_override : Bool? = cloudflare.try &.options.scanner.switcher.addrinfoOverride) : Tuple(FetchType, Array(Socket::IPAddress))
+                               addrinfo_override : Bool? = cloudflare.try &.options.scanner.quirks.addrinfoOverride) : Tuple(Symbol, FetchType, Array(Socket::IPAddress))
     # This function is used as an overridable.
     # E.g. Cloudflare.
 
-    fetch_type, ip_addresses = addrinfo_tuple = __getaddrinfo host: host, port: port, answer_safety_first: answer_safety_first
+    delegator, fetch_type, ip_addresses = addrinfo_tuple = __getaddrinfo host: host, port: port, answer_safety_first: answer_safety_first
     _cloudflare = cloudflare
 
     if _cloudflare && addrinfo_override
@@ -27,7 +27,7 @@ class DNS::Resolver
             Socket::IPAddress.new address: address_tuple.last.address, port: port
           end
 
-          return Tuple.new FetchType::Override, cloudflare_ip_addresses unless cloudflare_ip_addresses.empty?
+          return Tuple.new :__getaddrinfo_cloudflare, FetchType::Override, cloudflare_ip_addresses unless cloudflare_ip_addresses.empty?
         end
       end
     end
@@ -36,7 +36,7 @@ class DNS::Resolver
   end
 
   def getaddrinfo(host : String, port : Int32 = 0_i32, answer_safety_first : Bool = options.addrinfo.answerSafetyFirst,
-                  addrinfo_override : Bool? = cloudflare.try &.options.scanner.switcher.addrinfoOverride) : Tuple(FetchType, Array(Socket::IPAddress))
+                  addrinfo_override : Bool? = cloudflare.try &.options.scanner.quirks.addrinfoOverride) : Tuple(Symbol, FetchType, Array(Socket::IPAddress))
     __getaddrinfo_cloudflare host: host, port: port, answer_safety_first: answer_safety_first, addrinfo_override: addrinfo_override
   end
 end

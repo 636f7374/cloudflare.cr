@@ -44,6 +44,8 @@ class Cloudflare::Radar
   end
 
   private def concurrent_process_task(ip_blocks : Set(IPAddress::IPv4 | IPAddress::IPv6))
+    return if ip_blocks.empty?
+
     concurrent_mutex = Mutex.new :unchecked
     concurrent_fibers = Array(Fiber).new
     ip_blocks_iterator = ip_blocks.each

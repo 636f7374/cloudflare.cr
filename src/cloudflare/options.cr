@@ -8,10 +8,10 @@ struct Cloudflare::Options
   struct Scanner
     property caching : Caching
     property quirks : Quirks
-    property switcher : Switcher
     property timeout : TimeOut
+    property attempt : Attempt
 
-    def initialize(@caching : Caching = Caching.new, @quirks : Quirks = Quirks.new, @switcher : Switcher = Switcher.new, @timeout : TimeOut = TimeOut.new)
+    def initialize(@caching : Caching = Caching.new, @quirks : Quirks = Quirks.new, @timeout : TimeOut = TimeOut.new, @attempt : Attempt = Attempt.new)
     end
 
     struct Caching
@@ -30,16 +30,10 @@ struct Cloudflare::Options
       property skipRange : Range(Int32, Int32)
       property numberOfSleepPerRequest : Time::Span
       property numberOfSleepPerRound : Time::Span
-
-      def initialize(@numberOfScansPerIpBlock : Int32 = 25_i32, @maximumNumberOfFailuresPerIpBlock : Int32 = 15_i32, @skipRange : Range(Int32, Int32) = (6_i32..12_i32),
-                     @numberOfSleepPerRequest : Time::Span = 1_u8.seconds, @numberOfSleepPerRound : Time::Span = 5_u8.seconds)
-      end
-    end
-
-    struct Switcher
       property addrinfoOverride : Bool
 
-      def initialize(@addrinfoOverride : Bool = true)
+      def initialize(@numberOfScansPerIpBlock : Int32 = 25_i32, @maximumNumberOfFailuresPerIpBlock : Int32 = 15_i32, @skipRange : Range(Int32, Int32) = (6_i32..12_i32),
+                     @numberOfSleepPerRequest : Time::Span = 1_u8.seconds, @numberOfSleepPerRound : Time::Span = 5_u8.seconds, @addrinfoOverride : Bool = true)
       end
     end
   end
@@ -48,10 +42,9 @@ struct Cloudflare::Options
     property quirks : Quirks
     property excludes : Set(Set(Needles::Edge))
     property timeout : TimeOut
+    property attempt : Attempt
 
-    def initialize(@quirks : Quirks = Quirks.new)
-      @excludes = Set(Set(Needles::Edge)).new
-      @timeout = TimeOut.new
+    def initialize(@quirks : Quirks = Quirks.new, @excludes = Set(Set(Needles::Edge)).new, @timeout = TimeOut.new, @attempt : Attempt = Attempt.new)
     end
 
     def get_ip_blocks : Set(IPAddress::IPv4 | IPAddress::IPv6)
@@ -94,6 +87,13 @@ struct Cloudflare::Options
     property tls : Cloudflare::TimeOut
 
     def initialize(@tcp : Cloudflare::TimeOut = Cloudflare::TimeOut.new, @tls : Cloudflare::TimeOut = Cloudflare::TimeOut.new)
+    end
+  end
+
+  struct Attempt
+    property connect : UInt8
+
+    def initialize(@connect : UInt8 = 1_u8)
     end
   end
 end

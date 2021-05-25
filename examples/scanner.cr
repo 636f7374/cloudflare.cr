@@ -40,6 +40,12 @@ quirks:
   skipRange:
     - 1
     - 2
+dns:
+  addrinfoOverride: true
+  socket:
+    maximumNumberOfRetriesForPerIpAddress: 1
+    maximumNumberOfRetriesForIpv4ConnectionFailure: 6
+    maximumNumberOfRetriesForIpv6ConnectionFailure: 2
 endpoint:
   method: GET
   path: /__down?bytes=64
@@ -51,8 +57,6 @@ endpoint:
       Connection: "keep-alive"
       Host: "speed.cloudflare.com:$PORT"
       Upgrade-Insecure-Requests: "1"
-switcher:
-  addrinfoOverride: true
 timeout:
   tcp:
     read: 2

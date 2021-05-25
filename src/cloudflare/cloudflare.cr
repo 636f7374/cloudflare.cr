@@ -53,14 +53,29 @@ module Cloudflare
     end
   end
 
-  def self.attempt_create_tcp_socket!(ip_address : Socket::IPAddress, timeout : TimeOut) : Tuple(TCPSocket, Time::Span)
+  def self.attempt_create_tcp_socket!(ip_address : Socket::IPAddress, attempt_times : UInt8, timeout : TimeOut) : Tuple(TCPSocket, Time::Span)
     starting_time = Time.local
 
-    socket = TCPSocket.new ip_address: ip_address, connect_timeout: timeout.connect
-    socket.read_timeout = timeout.read
-    socket.write_timeout = timeout.write
+    attempt_times.times do |time|
+      begin
+        socket = TCPSocket.new ip_address: ip_address, connect_timeout: timeout.connect
+        socket.read_timeout = timeout.read
+        socket.write_timeout = timeout.write
 
-    Tuple.new socket, (Time.local - starting_time)
+        next if socket.closed?
+        socket.remote_address
+
+        return Tuple.new socket, (Time.local - starting_time)
+      rescue ex : IO::Error
+        next if "Error reading socket: Connection reset by peer" == ex.message
+
+        raise ex
+      rescue ex
+        raise ex
+      end
+    end
+
+    raise Exception.new String.build { |io| io << "Cloudflare.attempt_create_tcp_socket!: " << "After " << attempt_times << " attempts to connect (" << ip_address << "), It still fails!" }
   end
 
   def self.upgrade_tls_socket!(socket : TCPSocket, tls : TransportLayerSecurity, timeout : TimeOut) : Tuple(OpenSSL::SSL::Context::Client, OpenSSL::SSL::Socket::Client)

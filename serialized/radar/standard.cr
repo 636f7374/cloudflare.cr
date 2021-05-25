@@ -8,6 +8,7 @@ module Cloudflare::Serialized
       property excludes : Array(Array(Needles::Edge))?
       property quirks : Serialized::Options::Radar::Quirks
       property timeout : Serialized::Options::TimeOut
+      property attempt : Serialized::Options::Attempt
       property outputPath : String?
 
       def initialize(@endpoint : Endpoint)
@@ -17,6 +18,7 @@ module Cloudflare::Serialized
         ]]
         @quirks = Serialized::Options::Radar::Quirks.new
         @timeout = Serialized::Options::TimeOut.new
+        @attempt = Serialized::Options::Attempt.new
         @outputPath = nil
       end
 
@@ -29,6 +31,7 @@ module Cloudflare::Serialized
         radar = Cloudflare::Options::Radar.new
         radar.quirks = quirks.unwrap
         radar.timeout = timeout.unwrap
+        radar.attempt = attempt.unwrap
 
         _excludes = excludes
         radar.excludes = _excludes.map(&.to_set).to_set if _excludes

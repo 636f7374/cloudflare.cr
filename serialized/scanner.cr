@@ -6,13 +6,14 @@ module Cloudflare::Serialized
     property tasks : Array(Task)
     property caching : Caching
     property quirks : Quirks
+    property dns : DNS
     property timeout : Serialized::Options::TimeOut
-    property switcher : Switcher
+    property attempt : Serialized::Options::Attempt
 
-    def initialize(@endpoint : Endpoint, @tasks : Array(Task) = [] of Task, @caching : Caching = Caching.new, @quirks : Quirks = Quirks.new, @timeout : Serialized::Options::TimeOut = Serialized::Options::TimeOut.new, @switcher : Switcher = Switcher.new)
+    def initialize(@endpoint : Endpoint, @tasks : Array(Task) = [] of Task, @caching : Caching = Caching.new, @quirks : Quirks = Quirks.new, @dns : DNS = DNS.new, @timeout : Serialized::Options::TimeOut = Serialized::Options::TimeOut.new, @attempt : Serialized::Options::Attempt = Serialized::Options::Attempt.new)
     end
 
-    def unwrap : Tuple(Set(Cloudflare::Task::Scanner::Expect), Cloudflare::Scanner)
+    def unwrap(dns_resolver : ::DNS::Resolver) : Tuple(Set(Cloudflare::Task::Scanner::Expect), Cloudflare::Scanner)
       unwrapped_tasks = Set(Cloudflare::Task::Scanner::Expect).new
 
       tasks.each do |task|
@@ -26,13 +27,14 @@ module Cloudflare::Serialized
 
       options_scanner = Cloudflare::Options::Scanner.new
 
-      options_scanner.timeout = timeout.unwrap
-      options_scanner.quirks = quirks.unwrap
+      options_scanner.quirks = quirks.unwrap scanner: self
       options_scanner.caching = caching.unwrap
-      options_scanner.switcher = switcher.unwrap
+      options_scanner.timeout = timeout.unwrap
+      options_scanner.attempt = attempt.unwrap
 
       options = Cloudflare::Options.new
       options.scanner = options_scanner
+      options.dns = dns.unwrap dns_options: dns_resolver.options
 
       Tuple.new unwrapped_tasks, Cloudflare::Scanner.new endpoint: endpoint.unwrap, options: options
     end
@@ -118,66 +120,73 @@ module Cloudflare::Serialized
         caching
       end
     end
-  end
 
-  struct Quirks
-    include YAML::Serializable
+    struct Quirks
+      include YAML::Serializable
 
-    property numberOfScansPerIpBlock : Int32
-    property maximumNumberOfFailuresPerIpBlock : Int32
-    property skipRange : Array(Int32)
-    property numberOfSleepPerRequest : UInt8
-    property numberOfSleepPerRound : UInt8
+      property numberOfScansPerIpBlock : Int32
+      property maximumNumberOfFailuresPerIpBlock : Int32
+      property skipRange : Array(Int32)
+      property numberOfSleepPerRequest : UInt8
+      property numberOfSleepPerRound : UInt8
 
-    def initialize(@numberOfScansPerIpBlock : Int32 = 25_i32, @maximumNumberOfFailuresPerIpBlock : Int32 = 15_i32, @skipRange : Array(Int32) = [3_i32, 6_i32] of Int32, @numberOfSleepPerRequest : UInt8 = 1_u8, @numberOfSleepPerRound : UInt8 = 5_u8)
-    end
-
-    private def check_skip_range!
-      if 2_i32 != skipRange.size
-        raise Exception.new "Unfortunately, skipRange must be an array containing two Int32."
+      def initialize(@numberOfScansPerIpBlock : Int32 = 25_i32, @maximumNumberOfFailuresPerIpBlock : Int32 = 15_i32, @skipRange : Array(Int32) = [3_i32, 6_i32] of Int32, @numberOfSleepPerRequest : UInt8 = 1_u8, @numberOfSleepPerRound : UInt8 = 5_u8)
       end
 
-      if 0_i32 > skipRange.first
-        raise Exception.new "Unfortunately, the first Int32 of skipRange must be greater than negative one."
+      private def check_skip_range!
+        if 2_i32 != skipRange.size
+          raise Exception.new "Unfortunately, skipRange must be an array containing two Int32."
+        end
+
+        if 0_i32 > skipRange.first
+          raise Exception.new "Unfortunately, the first Int32 of skipRange must be greater than negative one."
+        end
+
+        if skipRange.last < skipRange.first
+          raise Exception.new "Unfortunately, the second Int32 of skipRange must be greater than the first Int32."
+        end
       end
 
-      if skipRange.last < skipRange.first
-        raise Exception.new "Unfortunately, the second Int32 of skipRange must be greater than the first Int32."
+      private def get_skip_range : Range(Int32, Int32)
+        begin
+          check_skip_range!
+          (skipRange.first..skipRange.last)
+        rescue ex
+          (3_i32..6_i32)
+        end
+      end
+
+      def unwrap(scanner : Scanner) : Cloudflare::Options::Scanner::Quirks
+        quirks = Cloudflare::Options::Scanner::Quirks.new
+
+        quirks.numberOfScansPerIpBlock = numberOfScansPerIpBlock
+        quirks.maximumNumberOfFailuresPerIpBlock = maximumNumberOfFailuresPerIpBlock
+        quirks.skipRange = get_skip_range
+        quirks.numberOfSleepPerRequest = numberOfSleepPerRequest.seconds
+        quirks.numberOfSleepPerRound = numberOfSleepPerRound.seconds
+        quirks.addrinfoOverride = scanner.dns.addrinfoOverride
+
+        quirks
       end
     end
 
-    private def get_skip_range : Range(Int32, Int32)
-      begin
-        check_skip_range!
-        (skipRange.first..skipRange.last)
-      rescue ex
-        (3_i32..6_i32)
+    struct DNS
+      include YAML::Serializable
+
+      property addrinfoOverride : Bool
+      property socket : ::DNS::Serialized::Options::Standard::Socket
+
+      def initialize(@addrinfoOverride : Bool = true, @socket : ::DNS::Serialized::Options::Standard::Socket = ::DNS::Serialized::Options::Standard::Socket.new)
       end
-    end
 
-    def unwrap : Cloudflare::Options::Scanner::Quirks
-      quirks = Cloudflare::Options::Scanner::Quirks.new
+      def unwrap(dns_options : ::DNS::Options) : ::DNS::Options
+        _dns_options = dns_options.dup
+        _dns_options.socket = socket.unwrap
 
-      quirks.numberOfScansPerIpBlock = numberOfScansPerIpBlock
-      quirks.maximumNumberOfFailuresPerIpBlock = maximumNumberOfFailuresPerIpBlock
-      quirks.skipRange = get_skip_range
-      quirks.numberOfSleepPerRequest = numberOfSleepPerRequest.seconds
-      quirks.numberOfSleepPerRound = numberOfSleepPerRound.seconds
-
-      quirks
-    end
-  end
-
-  struct Switcher
-    include YAML::Serializable
-
-    property addrinfoOverride : Bool
-
-    def initialize(@addrinfoOverride : Bool = true)
-    end
-
-    def unwrap : Cloudflare::Options::Scanner::Switcher
-      Cloudflare::Options::Scanner::Switcher.new addrinfoOverride: addrinfoOverride
+        _dns_options
+      end
     end
   end
 end
+
+require "./options/*"

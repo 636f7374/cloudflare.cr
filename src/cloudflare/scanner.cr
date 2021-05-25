@@ -31,6 +31,11 @@ class Cloudflare::Scanner
     @mutex.synchronize { @running = true }
 
     loop do
+      break if task_expects.empty?
+
+      _terminated = @mutex.synchronize { terminated.dup }
+      break @mutex.synchronize { @running = false } if _terminated
+
       concurrent_mutex = Mutex.new :unchecked
       concurrent_fibers = Set(Fiber).new
       _terminated = false
