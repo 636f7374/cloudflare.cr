@@ -8,14 +8,14 @@ class DNS::Resolver
   end
 
   def __getaddrinfo_cloudflare(host : String, port : Int32 = 0_i32, answer_safety_first : Bool = options.addrinfo.answerSafetyFirst,
-                               addrinfo_override : Bool? = cloudflare.try &.options.scanner.quirks.addrinfoOverride) : Tuple(Symbol, FetchType, Array(Socket::IPAddress))
+                               addrinfo_overridable : Bool? = cloudflare.try &.options.scanner.quirks.addrinfoOverride) : Tuple(Symbol, FetchType, Array(Socket::IPAddress))
     # This function is used as an overridable.
     # E.g. Cloudflare.
 
     delegator, fetch_type, ip_addresses = addrinfo_tuple = __getaddrinfo host: host, port: port, answer_safety_first: answer_safety_first
     _cloudflare = cloudflare
 
-    if _cloudflare && addrinfo_override
+    if _cloudflare && addrinfo_overridable
       allowed_fetch_type = fetch_type.remote? || fetch_type.caching? || fetch_type.local?
       consistent_port = ip_addresses.all? { |ip_address| port == ip_address.port }
 
@@ -35,8 +35,14 @@ class DNS::Resolver
     addrinfo_tuple
   end
 
-  def getaddrinfo(host : String, port : Int32 = 0_i32, answer_safety_first : Bool = options.addrinfo.answerSafetyFirst,
-                  addrinfo_override : Bool? = cloudflare.try &.options.scanner.quirks.addrinfoOverride) : Tuple(Symbol, FetchType, Array(Socket::IPAddress))
-    __getaddrinfo_cloudflare host: host, port: port, answer_safety_first: answer_safety_first, addrinfo_override: addrinfo_override
+  def getaddrinfo(host : String, port : Int32 = 0_i32, answer_safety_first : Bool? = nil, addrinfo_overridable : Bool? = nil) : Tuple(Symbol, FetchType, Array(Socket::IPAddress))
+    service_mapper_entry = serviceMapperCaching.get? host: host, port: port
+    answer_safety_first = service_mapper_entry.options.answerSafetyFirst if service_mapper_entry && answer_safety_first.nil?
+    addrinfo_overridable = service_mapper_entry.options.overridable if service_mapper_entry && addrinfo_overridable.nil?
+
+    answer_safety_first = options.addrinfo.answerSafetyFirst if answer_safety_first.nil?
+    addrinfo_overridable = cloudflare.try &.options.scanner.quirks.addrinfoOverride if addrinfo_overridable.nil?
+
+    __getaddrinfo_cloudflare host: host, port: port, answer_safety_first: answer_safety_first, addrinfo_overridable: addrinfo_overridable
   end
 end
