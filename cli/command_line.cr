@@ -63,6 +63,8 @@ module Cloudflare::CommandLine
     external_controller = ExternalController.new io: caller, calleeSet: serialized_callees
     spawn { external_controller.perform }
 
+    sleep 10_i32.seconds
+
     case parallel.type
     in .sub_process?
       sub_process_count = serialized_callees.size
