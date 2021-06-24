@@ -35,7 +35,7 @@ class DNS::Resolver
     addrinfo_tuple
   end
 
-  def getaddrinfo(host : String, port : Int32 = 0_i32, answer_safety_first : Bool? = nil, addrinfo_overridable : Bool? = nil) : Tuple(Symbol, FetchType, Array(Socket::IPAddress))
+  def getaddrinfo(host : String, port : Int32 = 0_i32, caller : Symbol? = nil, answer_safety_first : Bool? = nil, addrinfo_overridable : Bool? = nil) : Tuple(Symbol, FetchType, Array(Socket::IPAddress))
     service_mapper_entry = serviceMapperCaching.get? host: host, port: port
     answer_safety_first = service_mapper_entry.options.answerSafetyFirst if service_mapper_entry && answer_safety_first.nil?
     addrinfo_overridable = service_mapper_entry.options.overridable if service_mapper_entry && addrinfo_overridable.nil?
