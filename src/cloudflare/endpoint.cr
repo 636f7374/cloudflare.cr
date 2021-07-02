@@ -38,7 +38,6 @@ abstract struct Cloudflare::Endpoint
     request.headers["Host"] = request.headers["Host"]? || String.build { |io| io << ip_address.address << ':' << ip_address.port }
     request.headers["Host"] = request.headers["Host"].gsub "$PORT", endpoint.port
 
-
     case _endpoint
     in Endpoint::TCP
       begin

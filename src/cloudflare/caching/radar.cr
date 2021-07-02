@@ -16,7 +16,7 @@ module Cloudflare::Caching
       @mutex.synchronize { entries.each { |ip_block, entry| yield ip_block, entry } }
     end
 
-    def exclude(options : Options)
+    def exclude!(options : Options)
       @mutex.synchronize do
         options.radar.excludes.each do |needles|
           entries.each do |name, entry|

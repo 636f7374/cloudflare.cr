@@ -3,6 +3,7 @@ module Cloudflare::Serialized
     include YAML::Serializable
 
     property endpoint : Endpoint
+    property controller : Controller
     property tasks : Array(Task)
     property caching : Caching
     property quirks : Quirks
@@ -10,7 +11,28 @@ module Cloudflare::Serialized
     property timeout : Serialized::Options::TimeOut
     property attempt : Serialized::Options::Attempt
 
-    def initialize(@endpoint : Endpoint, @tasks : Array(Task) = [] of Task, @caching : Caching = Caching.new, @quirks : Quirks = Quirks.new, @dns : DNS = DNS.new, @timeout : Serialized::Options::TimeOut = Serialized::Options::TimeOut.new, @attempt : Serialized::Options::Attempt = Serialized::Options::Attempt.new)
+    def initialize(@endpoint : Endpoint, @controller : Controller = Controller::BuiltIn.new, @tasks : Array(Task) = [] of Task, @caching : Caching = Caching.new, @quirks : Quirks = Quirks.new, @dns : DNS = DNS.new, @timeout : Serialized::Options::TimeOut = Serialized::Options::TimeOut.new, @attempt : Serialized::Options::Attempt = Serialized::Options::Attempt.new)
+    end
+
+    def unwrap_generic : Tuple(Tuple(Controller::External, Proc(Process::Status)) | Set(Cloudflare::Task::Scanner::Expect), Cloudflare::Scanner)
+      built_in = unwrap
+
+      case _controller = controller
+      in Controller::External
+        self_dup = self.dup
+        payload = Base64.strict_encode self_dup.to_yaml
+
+        sub_process_proc = ->do
+          process = Process.new command: String.build { |io| io << _controller.executableName << " scanner --payload " << payload }, shell: true
+          process.wait
+        end
+
+        return Tuple.new Tuple.new(_controller, sub_process_proc), built_in.last
+      in Controller::BuiltIn
+      in Controller
+      end
+
+      return built_in
     end
 
     def unwrap : Tuple(Set(Cloudflare::Task::Scanner::Expect), Cloudflare::Scanner)
@@ -185,3 +207,4 @@ module Cloudflare::Serialized
 end
 
 require "./options/*"
+require "./scanner/*"

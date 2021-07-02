@@ -16,6 +16,10 @@ module Cloudflare
     TLS = 1_u8
   end
 
+  enum ScannerControllerFlag : UInt8
+    FETCH = 0_u8
+  end
+
   def self.unwrap_prefix_24(ip_blocks : Set(IPAddress::IPv4 | IPAddress::IPv6)) : Set(IPAddress::IPv4 | IPAddress::IPv6)
     concurrent_mutex = Mutex.new :unchecked
     concurrent_fibers = Set(Fiber).new

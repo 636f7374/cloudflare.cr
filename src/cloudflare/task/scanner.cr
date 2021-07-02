@@ -24,7 +24,7 @@ module Cloudflare::Task
           tuples = Cloudflare::Endpoint.check_scanner_establish! ip_address: _ip_address, endpoint: endpoint, options: options
 
           response, edge, connect_elapsed, establish_elapsed = tuples
-          raise Exception.new "Edge.to_iata? is Nil!" unless iata = edge.to_iata?
+          raise Exception.new "Task::Scanner: Edge.to_iata? is Nil!" unless iata = edge.to_iata?
           next unless entry = expect.entries.find { |expect| iata == expect.iata }
 
           each_counter.add 1_u64

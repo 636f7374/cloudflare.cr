@@ -25,6 +25,67 @@ class Cloudflare::Scanner
     @mutex.synchronize { @terminated = true }
   end
 
+  def perform(task_tuple : Tuple(Cloudflare::Serialized::Scanner::Controller::External, Proc(Process::Status)))
+    raise Exception.new "Scanner.perform_external: Scanner is already running!" if @mutex.synchronize { running.dup }
+    raise Exception.new "Scanner.perform_external: Scanner has terminated!" if @mutex.synchronize { terminated.dup }
+    @mutex.synchronize { @running = true }
+    serialized_external, sub_process_proc = task_tuple
+    caching.external_controller = true
+
+    loop do
+      _terminated = @mutex.synchronize { terminated.dup }
+      break @mutex.synchronize { @running = false } if _terminated
+
+      sub_process_fiber = spawn { sub_process_proc.call }
+
+      loop do
+        break if sub_process_fiber.dead?
+
+        _terminated = @mutex.synchronize { terminated.dup }
+        break @mutex.synchronize { @running = false } if _terminated
+
+        socket = serialized_external.unwrap_client rescue nil
+        next sleep 5_i32.seconds unless socket
+
+        socket.sync = true if socket.responds_to? :sync=
+        socket.read_timeout = serialized_external.timeout.client.read.seconds
+        socket.write_timeout = serialized_external.timeout.client.write.seconds
+
+        loop do
+          _terminated = @mutex.synchronize { terminated.dup }
+          break @mutex.synchronize { @running = false } if _terminated
+
+          begin
+            socket.write Bytes[ScannerControllerFlag::FETCH]
+            socket.flush
+            copy_length = socket.read_bytes UInt32, IO::ByteFormat::BigEndian
+
+            if copy_length > serialized_external.maximumNumberOfBytesReceivedEachTime
+              message = String.build { |io| io << "Cloudflare::Scanner.perform: copy_length > External.maximumNumberOfBytesReceivedEachTime! (" << copy_length << '>' << serialized_external.maximumNumberOfBytesReceivedEachTime << ")." }
+
+              raise Exception.new message
+            end
+
+            temporary = IO::Memory.new copy_length
+            IO.copy socket, temporary, copy_length
+
+            serialized_export = Cloudflare::Serialized::Export::Scanner.from_json String.new(temporary.to_slice)
+            caching.restore serialized_export: serialized_export unless serialized_export.entries.empty?
+
+            flush_interval = serialized_export.entries.empty? ? serialized_external.flushIntervalWhenEmptyEntries : serialized_external.flushInterval
+            sleep flush_interval.seconds
+          rescue ex
+            socket.close rescue nil
+
+            break
+          end
+        end
+      end
+
+      sleep 5_i32.seconds
+    end
+  end
+
   def perform(task_expects : Set(Task::Scanner::Expect))
     raise Exception.new "Scanner.perform: Scanner is already running!" if @mutex.synchronize { running.dup }
     raise Exception.new "Scanner.perform: Scanner has terminated!" if @mutex.synchronize { terminated.dup }
