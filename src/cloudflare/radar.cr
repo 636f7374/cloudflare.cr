@@ -47,7 +47,7 @@ class Cloudflare::Radar
     return if ip_blocks.empty?
 
     concurrent_mutex = Mutex.new :unchecked
-    concurrent_fibers = Array(Fiber).new
+    concurrent_fibers = Set(Fiber).new
     ip_blocks_iterator = ip_blocks.each
 
     main_concurrent_fiber = spawn do

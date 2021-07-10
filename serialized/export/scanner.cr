@@ -4,9 +4,9 @@ module Cloudflare::Serialized
       include JSON::Serializable
 
       property entries : Hash(String, Array(Entry))
-      property latestCleanedUp : Time
+      property lastCleanedUp : Time
 
-      def initialize(@entries : Hash(String, Array(Entry)), @latestCleanedUp : Time)
+      def initialize(@entries : Hash(String, Array(Entry)), @lastCleanedUp : Time)
       end
 
       def unwrap_entries! : Hash(IPAddress, Set(Cloudflare::Caching::Scanner::Entry))

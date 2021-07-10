@@ -2,12 +2,12 @@ module Cloudflare::Caching
   class Scanner
     getter options : Options
     getter entries : Hash(IPAddress, Set(Entry))
-    getter latestCleanedUp : Time
+    getter lastCleanedUp : Time
     getter mutex : Mutex
 
     def initialize(@options : Options)
       @entries = Hash(IPAddress, Set(Entry)).new
-      @latestCleanedUp = Time.local
+      @lastCleanedUp = Time.local
       @mutex = Mutex.new :unchecked
     end
 
@@ -22,18 +22,18 @@ module Cloudflare::Caching
     def restore(serialized_export : Serialized::Export::Scanner)
       @mutex.synchronize do
         @entries = serialized_export.unwrap_entries!
-        @latestCleanedUp = serialized_export.latestCleanedUp
+        @lastCleanedUp = serialized_export.lastCleanedUp
       end
 
       true
     end
 
-    private def refresh_latest_cleaned_up
-      @mutex.synchronize { @latestCleanedUp = Time.local }
+    private def refresh_last_cleaned_up
+      @mutex.synchronize { @lastCleanedUp = Time.local }
     end
 
     private def need_cleared? : Bool
-      interval = Time.local - latestCleanedUp
+      interval = Time.local - lastCleanedUp
       interval > options.scanner.caching.clearInterval
     end
 
@@ -138,7 +138,7 @@ module Cloudflare::Caching
     end
 
     def to_serialized : Serialized::Export::Scanner
-      Serialized::Export::Scanner.new entries: to_serialized_entries, latestCleanedUp: latestCleanedUp
+      Serialized::Export::Scanner.new entries: to_serialized_entries, lastCleanedUp: lastCleanedUp
     end
 
     struct Entry
