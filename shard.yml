@@ -6,6 +6,10 @@ dependencies:
     github: 64726f70/ipaddress.cr
     version: ~> 1.0.0
 
+targets:
+  cloudflare:
+    main: cli.cr
+
 authors:
   - 636f7374
 
