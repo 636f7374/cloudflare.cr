@@ -1,4 +1,6 @@
 module Cloudflare
-  LATEST_RELEASE_DATE = "Thursday, February 25, 2021"
-  VERSION             = "1.0.0"
+  RELEASE_DATE = Time.parse_local("2021-02-25 00:00:00 +08:00", "%F %T ")
+  VERSION      = "1.0.0"
+  LICENSE      = "GPLv3"
+  AUTHORS      = Set{({name: "636f7374"})}
 end

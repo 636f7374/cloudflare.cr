@@ -27,7 +27,6 @@ module Cloudflare::CommandLine
 
             loop do
               begin
-                client.sync = true if client.responds_to? :sync=
                 read_length = client.read buffer.to_slice
                 raise Exception.new "CommandLine::Scanner::ExternalController.perform: Client read_length is zero!" if read_length.zero?
 
@@ -36,8 +35,11 @@ module Cloudflare::CommandLine
                 case flag
                 in .fetch?
                   serialized = scanner.caching.to_serialized.to_json
+
                   client.write_bytes serialized.size, IO::ByteFormat::BigEndian
-                  client << serialized
+                  client.flush
+
+                  client.write serialized.to_slice
                   client.flush
                 end
               rescue ex

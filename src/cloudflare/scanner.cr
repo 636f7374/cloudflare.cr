@@ -47,16 +47,17 @@ class Cloudflare::Scanner
         socket = serialized_external.unwrap_client rescue nil
         next sleep 5_i32.seconds unless socket
 
-        socket.sync = true if socket.responds_to? :sync=
         socket.read_timeout = serialized_external.timeout.client.read.seconds
         socket.write_timeout = serialized_external.timeout.client.write.seconds
+
+        temporary = IO::Memory.new
 
         loop do
           _terminated = @mutex.synchronize { terminated.dup }
           break @mutex.synchronize { @running = false } if _terminated
 
           begin
-            socket.write Bytes[ScannerControllerFlag::FETCH]
+            socket.write Bytes[ScannerControllerFlag::FETCH.value]
             socket.flush
             copy_length = socket.read_bytes UInt32, IO::ByteFormat::BigEndian
 
@@ -66,16 +67,22 @@ class Cloudflare::Scanner
               raise Exception.new message
             end
 
-            temporary = IO::Memory.new copy_length
             IO.copy socket, temporary, copy_length
-
             serialized_export = Cloudflare::Serialized::Export::Scanner.from_json String.new(temporary.to_slice)
             caching.restore serialized_export: serialized_export unless serialized_export.entries.empty?
+
+            temporary.clear
+            temporary.rewind
 
             flush_interval = serialized_export.entries.empty? ? serialized_external.flushIntervalWhenEmptyEntries : serialized_external.flushInterval
             sleep flush_interval.seconds
           rescue ex
             socket.close rescue nil
+
+            temporary.clear
+            temporary.rewind
+
+            sleep serialized_external.flushIntervalWhenEmptyEntries
 
             break
           end

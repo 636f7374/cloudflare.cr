@@ -73,7 +73,7 @@ struct Cloudflare::Options
       property maximumNumberOfFailuresPerIpBlock : Int32
       property skipRange : Range(Int32, Int32)
 
-      def initialize(@scanIpAddressType : ScanIpAddressType = ScanIpAddressType::Ipv4Only)
+      def initialize(@scanIpAddressType : ScanIpAddressType = ScanIpAddressType::IPV4_ONLY)
         @concurrentCount = 220_i32
         @numberOfScansPerIpBlock = 25_i32
         @maximumNumberOfFailuresPerIpBlock = 15_i32

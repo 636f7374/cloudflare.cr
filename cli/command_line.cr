@@ -10,7 +10,7 @@ module Cloudflare::CommandLine
       end
 
       parser.on "-v", "--version", "Get version information of this Cloudflare." do
-        value = %(    Cloudflare.cr - Cloudflare Radar and Booster\n    Version: #{Cloudflare::VERSION} (#{Cloudflare::LATEST_RELEASE_DATE}))
+        value = %(    Cloudflare.cr - Cloudflare Radar and Booster\n    Version: #{Cloudflare::VERSION} (#{Cloudflare::RELEASE_DATE}))
         STDOUT.puts value
 
         abort
