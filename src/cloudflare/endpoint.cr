@@ -51,25 +51,18 @@ abstract struct Cloudflare::Endpoint
 
       socket.close rescue nil
     in Endpoint::TLS
-      tls_context, tls_socket = Cloudflare.upgrade_tls_socket! socket: socket, tls: _endpoint.tls, timeout: options.{{function_type.id}}.timeout.tls
-
-      tls_socket.skip_finalize = true
-      tls_context.skip_finalize = true
+      tls_socket = Cloudflare.upgrade_tls_socket! socket: socket, tls: _endpoint.tls, timeout: options.{{function_type.id}}.timeout.tls
 
       begin
         request.to_io io: tls_socket
         response = HTTP::Client::Response.from_io io: tls_socket, ignore_body: true
       rescue ex
         tls_socket.close rescue nil
-        tls_socket.free
-        tls_context.free
 
         raise ex
       end
 
       tls_socket.close rescue nil
-      tls_socket.free
-      tls_context.free
     in Endpoint
       socket.close rescue nil
       raise Exception.new String.build { |io| io << "Cloudflare::Endpoint.check_" << {{function_type.id.stringify}} << "_establish!: The endpoint type is not TCP or TLS!" }

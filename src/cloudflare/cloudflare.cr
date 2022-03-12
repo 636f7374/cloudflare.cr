@@ -82,30 +82,24 @@ module Cloudflare
     raise Exception.new String.build { |io| io << "Cloudflare.attempt_create_tcp_socket!: " << "After " << attempt_times << " attempts to connect (" << ip_address << "), It still fails!" }
   end
 
-  def self.upgrade_tls_socket!(socket : TCPSocket, tls : TransportLayerSecurity, timeout : TimeOut) : Tuple(OpenSSL::SSL::Context::Client, OpenSSL::SSL::Socket::Client)
-    begin
-      tls_context = tls.unwrap
-    rescue ex
-      socket.close rescue nil
-
-      raise ex
-    end
-
+  def self.upgrade_tls_socket!(socket : TCPSocket, tls : TransportLayerSecurity, timeout : TimeOut) : OpenSSL::SSL::Socket::Client
     socket.read_timeout = timeout.read
     socket.write_timeout = timeout.write
+    tls_context = tls.unwrap
 
     begin
       tls_socket = OpenSSL::SSL::Socket::Client.new io: socket, context: tls_context, sync_close: true, hostname: (tls.hostname.empty? ? nil : tls.hostname)
+      tls_socket.read_buffering = false
+      tls_socket.ssl_context = tls_context
       tls_socket.sync = true
     rescue ex
       socket.close rescue nil
-
-      tls_context.skip_finalize = true
+      tls_socket.try &.close rescue nil
       tls_context.free
 
       raise ex
     end
 
-    Tuple.new tls_context, tls_socket
+    tls_socket
   end
 end
