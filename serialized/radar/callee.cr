@@ -11,8 +11,8 @@ module Cloudflare::Serialized
       property ipBlocks : Array(String)
 
       def initialize(@endpoint : Endpoint)
-        @excludes = [[Needles::Edge::LosAngeles_UnitedStates], [Needles::Edge::SanJose_UnitedStates], [
-          Needles::Edge::LosAngeles_UnitedStates, Needles::Edge::SanJose_UnitedStates,
+        @excludes = [[Needles::Edge::LosAngeles_CA_UnitedStates], [Needles::Edge::SanJose_CA_UnitedStates], [
+          Needles::Edge::LosAngeles_CA_UnitedStates, Needles::Edge::SanJose_CA_UnitedStates,
         ]]
         @quirks = Serialized::Options::Radar::Quirks.new
         @timeout = Serialized::Options::TimeOut.new

@@ -1,17 +1,23 @@
 // References: https://www.cloudflarestatus.com/
-// Written in: Thursday, February 25, 2021
+// Written in: Thursday, September 1, 2022
 // Executed every six months, Cloudflare will add new location Edge servers from time to time.
 // We need to stay in sync.
 
-// Regular Expression (Sublime)
-// IATA Regular expression: (.*?\()(\w+)(.*) => \1
-// Edge Regular expression: -> {
-// -> (  \")(.*?)( \-[\ \ ]+.*) => \2
-// -> (.*?), (.*?), (.*) => \1_\3
-// -> ,\ => _
-// -> \  =>
-// -> [\.\']+ =>
-// }
+// Page -> Crystal Playground
+// \ \ \ \ |\"|\"\,|\[|\]|(\,$) =>
+// \ \-(\ |\ ) => - 
+
+// Crystal Playground -> PlainText
+// \]|\[|\"|(\,$)|(^\ ) =>
+
+// PlainText -> Enum IATA
+// .*\((\w{3})\)( = \d+_i32) => \1\2
+
+// PlainText -> Enum Edge
+// \ \-\ \(\w{3}\)|\.|' =>
+// \-\,\  => _
+// \ =>
+// \= =>  = 
 
 // Format to Enum (Crystal)
 // ==========================
@@ -26,21 +32,15 @@
 // list
 // ==========================
 
-// Position Anchor point.
-let regionsSections = document.getElementsByClassName('regions-section font-regular');
-
-// The first section is the Cloudflare system state, which is useless to us, we remove it.
-regionsSections[0].children[0].children[0].remove();
-
-// Define regionsSectionsRootNode and list.
-let regionsSectionsRootNode = regionsSections[0].children[0].children;
+// Define regions and list.
+let regions = document.getElementsByClassName("component-container border-color is-group open");
 let list = [];
 
 // Put the result into the list.
-for (let region of regionsSectionsRootNode) {
-	for (let cityRootNode of region.children[1].children) {
-		list.push(cityRootNode.children[0].innerText);
-	}
+for (let region of regions) {
+  for (let location of region.children[1].children) {
+    list.push(location.children[0].innerText);
+  }
 }
 
 // Copy to clipboard.

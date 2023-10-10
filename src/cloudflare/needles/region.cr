@@ -12,13 +12,13 @@ module Cloudflare::Needles
       Oceania                   = 6_u8
     end
 
-    Africa                    = (0_i32..16_i32).map { |index| IATA.from_value index }.to_set
-    Asia                      = (17_i32..77_i32).map { |index| IATA.from_value index }.to_set
-    Europe                    = (78_i32..125_i32).map { |index| IATA.from_value index }.to_set
-    LatinAmerica_TheCaribbean = (126_i32..147_i32).map { |index| IATA.from_value index }.to_set
-    MiddleEast                = (148_i32..159_i32).map { |index| IATA.from_value index }.to_set
-    NorthAmerica              = (160_i32..207_i32).map { |index| IATA.from_value index }.to_set
-    Oceania                   = (208..214_i32).map { |index| IATA.from_value index }.to_set
+    Africa                    = (0_i32..21_i32).map { |index| IATA.from_value index }.to_set
+    Asia                      = (22_i32..102_i32).map { |index| IATA.from_value index }.to_set
+    Europe                    = (103_i32..156_i32).map { |index| IATA.from_value index }.to_set
+    LatinAmerica_TheCaribbean = (157_i32..204_i32).map { |index| IATA.from_value index }.to_set
+    MiddleEast                = (205_i32..225_i32).map { |index| IATA.from_value index }.to_set
+    NorthAmerica              = (226_i32..272_i32).map { |index| IATA.from_value index }.to_set
+    Oceania                   = (273..283_i32).map { |index| IATA.from_value index }.to_set
 
     def self.parse?(value : String)
       _flag = Flag.parse? value rescue nil

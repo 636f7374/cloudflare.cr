@@ -9,6 +9,7 @@ class DNS::Resolver
 
   def __getaddrinfo_cloudflare(host : String, port : Int32 = 0_i32, answer_safety_first : Bool = options.addrinfo.answerSafetyFirst,
                                addrinfo_overridable : Bool? = cloudflare.try &.options.scanner.quirks.addrinfoOverride) : Tuple(Symbol, FetchType, Array(Socket::IPAddress))
+    # port.zero? (E.g. Warpless).
     # This function is used as an overridable.
     # E.g. Cloudflare.
 
@@ -19,7 +20,7 @@ class DNS::Resolver
       allowed_fetch_type = fetch_type.remote? || fetch_type.caching? || fetch_type.local?
       consistent_port = ip_addresses.all? { |ip_address| port == ip_address.port }
 
-      if consistent_port && allowed_fetch_type
+      if (consistent_port || port.zero?) && allowed_fetch_type
         ip_block_includes = Cloudflare::IpBlock.includes? ip_addresses.first unless ip_addresses.empty?
 
         if ip_block_includes
