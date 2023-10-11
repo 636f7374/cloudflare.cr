@@ -17,10 +17,10 @@ module Cloudflare::Serialized
         property timeout : TimeOut
         property flushIntervalWhenEmptyEntries : UInt8
         property flushInterval : UInt8
-        property maximumNumberOfBytesReceivedEachTime : UInt16
+        property maximumNumberOfBytesReceivedEachTime : UInt32
 
         def initialize(@executableName : String, @listenAddress : String, @reusePort : Bool, @timeout : TimeOut, @flushIntervalWhenEmptyEntries : UInt8,
-                       @flushInterval : UInt8, @maximumNumberOfBytesReceivedEachTime : UInt16)
+                       @flushInterval : UInt8, @maximumNumberOfBytesReceivedEachTime : UInt32)
           @type = "external"
         end
 
