@@ -85,9 +85,8 @@ quirks:
 dns:
   addrinfoOverride: true
   socket:
-    maximumNumberOfRetriesForPerIpAddress: 1
-    maximumNumberOfRetriesForIpv4ConnectionFailure: 6
-    maximumNumberOfRetriesForIpv6ConnectionFailure: 2
+    maximumIpv4Attempts: 6
+    maximumIpv6Attempts: 2
 endpoint:
   method: GET
   path: /__down?bytes=256000
