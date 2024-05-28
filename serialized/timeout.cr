@@ -15,9 +15,9 @@ module Cloudflare::Serialized
     def unwrap : Cloudflare::TimeOut
       timeout = Cloudflare::TimeOut.new
 
-      timeout.read = read
-      timeout.write = write
-      timeout.connect = connect
+      timeout.read = read.seconds
+      timeout.write = write.seconds
+      timeout.connect = connect.seconds
 
       timeout
     end
